@@ -43,6 +43,7 @@ export interface Argument<Message extends CommandMessage> {
   checkValue?:
     | RegExp
     | ((value: string, message: Message) => boolean | Promise<boolean>)
+  checkValueError?: string
   description?: string
 }
 
@@ -115,7 +116,7 @@ export class Commands extends Discord.Collection<string, Command<any>> {
 }
 
 export async function checkValue<Message extends CommandMessage>(
-  subject: Pick<Argument<Message>, "checkValue" | "name">,
+  subject: Pick<Argument<Message>, "checkValue" | "name" | "checkValueError">,
   subjectType: "positional" | "argument",
   value: string,
   message: Message
@@ -137,6 +138,7 @@ export async function checkValue<Message extends CommandMessage>(
           message.client.user?.displayAvatarURL()
         )
         .setDescription(
+            subject.checkValueError ? subject.checkValueError.replace(/{}/g, value) :
           typeof subject.checkValue === "function"
             ? app.CODE.stringify({
                 content: app.CODE.format(subject.checkValue.toString()),

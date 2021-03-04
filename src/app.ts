@@ -13,3 +13,6 @@ export * as handler from "./app/handler"
 export * as logger from "./app/logger"
 export * as utils from "./app/utils"
 export * as core from "./app/core"
+
+
+export * as eddy from "./app/eddy/eddy"

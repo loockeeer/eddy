@@ -2,9 +2,8 @@ import Discord from "discord.js"
 import dotenv from "dotenv"
 import chalk from "chalk"
 import fs from "fs/promises"
-import figlet from "figlet"
 import path from "path"
-import boxen from "boxen"
+import * as app from "./app"
 
 dotenv.config()
 
@@ -19,8 +18,6 @@ const client = new Discord.Client()
 client.login(process.env.TOKEN).catch(() => {
   throw new Error("Invalid Discord token given.")
 })
-
-import * as app from "./app"
 
 fs.readdir(app.commandsPath)
   .then((files) =>
