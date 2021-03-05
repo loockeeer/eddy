@@ -138,8 +138,9 @@ export async function checkValue<Message extends CommandMessage>(
           message.client.user?.displayAvatarURL()
         )
         .setDescription(
-            subject.checkValueError ? subject.checkValueError.replace(/{}/g, value) :
-          typeof subject.checkValue === "function"
+          subject.checkValueError
+            ? subject.checkValueError.replace(/{}/g, value)
+            : typeof subject.checkValue === "function"
             ? app.CODE.stringify({
                 content: app.CODE.format(subject.checkValue.toString()),
                 lang: "js",

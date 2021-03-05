@@ -1,4 +1,4 @@
-import {join} from "path"
+import { join } from "path"
 
 import prettier from "prettier"
 import dayjs from "dayjs"

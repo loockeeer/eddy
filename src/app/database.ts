@@ -1,6 +1,6 @@
 import Discord from "discord.js"
 import Enmap from "enmap"
-import {DatasetInterface} from "./eddy/Dataset"
+import { DatasetInterface } from "./eddy/Dataset"
 
 //# Exemple with Enmap:
 
@@ -10,10 +10,10 @@ export const prefixes = new Enmap<Discord.Snowflake, string>({
 })
 
 export const datasets = new Enmap<Discord.Snowflake, DatasetInterface>({
-  name: "datasets"
+  name: "datasets",
 })
 
 export const links = new Enmap<Discord.Snowflake, string>({
-  name: "links"
+  name: "links",
 })
 // Docs: https://enmap.evie.dev/
