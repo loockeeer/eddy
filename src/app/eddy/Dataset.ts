@@ -1,5 +1,6 @@
 import Discord from "discord.js"
 import { datasets } from "../database"
+import {CommandMessage} from "../handler";
 
 export enum Permissions {
   "NONE",

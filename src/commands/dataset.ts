@@ -1,5 +1,6 @@
 import * as app from "../app"
 
+// @ts-ignore
 const command: app.Command = {
   name: "dataset",
   description: "Show information about a dataset",
@@ -65,6 +66,9 @@ const command: app.Command = {
         )}`,
         true
       )
+      .setColor("BLUE")
+      .setTimestamp()
+      .setFooter(app.footer)
     return message.channel.send(embed)
   },
   subs: [
@@ -182,7 +186,7 @@ const command: app.Command = {
                 .setColor("BLURPLE")
                 .setAuthor(
                   "Datasets list",
-                  message.client.user?.displayAvatarURL()
+                  message.client.user?.displayAvatarURL({ dynamic: true })
                 )
                 .setDescription(page.join("\n"))
             }
@@ -194,7 +198,7 @@ const command: app.Command = {
     },
     {
       name: "create",
-      aliases: ["new", "make"],
+      aliases: ["new", "make", "add"],
       description: "Create a new dataset",
       positional: [
         {
@@ -284,7 +288,7 @@ const command: app.Command = {
                 .setColor("RED")
                 .setAuthor(
                   `You need the \`MANAGE_GUILD\` permission to call this command.`,
-                  message.client.user?.displayAvatarURL()
+                  message.client.user?.displayAvatarURL({ dynamic: true })
                 )
             )
           } else {
@@ -314,36 +318,164 @@ const command: app.Command = {
       },
     },
     {
-      name: "config",
+      name: "permission",
+      description: "Sub command for dataset permission settings",
       async run(message) {
-        await message.reply("dataset command is not yet implemented.")
+        return app.sendCommandDetails(
+          message,
+          this,
+          await app.prefix(message.guild ?? undefined)
+        )
       },
       subs: [
         {
-          name: "permissions",
-          subs: [
+          name: "global",
+          positional: [
             {
-              name: "global",
-              async run(message) {
-                await message.reply("dataset command is not yet implemented.")
-              },
+              name: "dataset",
+              description: "The dataset you want to choose",
+              checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
+              checkValueError: "There is not any dataset with that name : {}",
+              castValue: (datasetName) => new app.eddy.Dataset(datasetName),
+              required: true,
             },
             {
-              name: "specific",
-              async run(message) {
-                await message.reply("dataset command is not yet implemented.")
-              },
+              name: "permission",
+              description: "The global permission level",
+              checkValue: (v) =>
+                ["write", "use", "none"].includes(v.toLowerCase()),
+              checkValueError:
+                "Permission must be a number and must be none, use or write",
+              castValue: (v: string) =>
+                app.eddy.Permissions[
+                  (v.toUpperCase() as unknown) as app.eddy.Permissions
+                ],
+              default: "",
+              required: false,
             },
           ],
           async run(message) {
-            await message.reply("dataset command is not yet implemented.")
+            const dataset: app.eddy.Dataset = message.positional.dataset
+            if (message.positional.permission !== undefined) {
+              if (
+                message.positional.dataset.data.ownerKind ===
+                  app.eddy.TargetKinds.GUILD &&
+                message?.guild?.id !== message.positional.dataset.ownerID
+              ) {
+                return message.channel.send(
+                  app.messageEmbed(
+                    `Dataset ${message.positional.dataset.name} does not belong to this guild`,
+                    message.author,
+                    "RED"
+                  )
+                )
+              } else if (
+                message.positional.dataset.data.ownerKind ===
+                  app.eddy.TargetKinds.GUILD &&
+                !message?.member?.hasPermission("MANAGE_GUILD", {
+                  checkAdmin: true,
+                  checkOwner: true,
+                })
+              ) {
+                return message.channel.send(
+                  new app.MessageEmbed()
+                    .setColor("RED")
+                    .setAuthor(
+                      `You need the \`MANAGE_GUILD\` permission to call this command.`,
+                      message.client.user?.displayAvatarURL({ dynamic: true })
+                    )
+                )
+              } else if (
+                message.positional.dataset.data.ownerKind ===
+                  app.eddy.TargetKinds.USER &&
+                message.positional.dataset.ownerID !== message.author.id
+              ) {
+                return message.channel.send(
+                  app.messageEmbed(
+                    `Dataset ${message.positional.dataset.name} does not belong to you`,
+                    message.author,
+                    "RED"
+                  )
+                )
+              }
+              const oldGlobal = dataset.globalPermission
+              dataset.globalPermission = message.positional.permission
+              return message.channel.send(
+                new app.MessageEmbed()
+                  .setAuthor(
+                    message.author.tag,
+                    message.author.displayAvatarURL({ dynamic: true })
+                  )
+                  .setDescription(
+                    `Successfully changed global permission for dataset ${dataset.name}`
+                  )
+                  .addField(
+                    "Old :",
+                    `Use : ${app.checkMark(
+                      oldGlobal !== app.eddy.Permissions.NONE
+                    )} \n Write : ${app.checkMark(
+                      oldGlobal === app.eddy.Permissions.WRITE
+                    )}`,
+                    true
+                  )
+                  .addField(
+                    "New :",
+                    `Use : ${app.checkMark(
+                      dataset.globalPermission !== app.eddy.Permissions.NONE
+                    )} \n Write : ${app.checkMark(
+                      dataset.globalPermission === app.eddy.Permissions.WRITE
+                    )}`,
+                    true
+                  )
+                  .setColor("GREEN")
+                  .setTimestamp()
+                  .setFooter(app.footer)
+              )
+            }
+            return message.channel.send(
+              new app.MessageEmbed()
+                .setAuthor(
+                  message.author.tag,
+                  message.author.displayAvatarURL({ dynamic: true })
+                )
+                .setDescription(`Global permission for dataset ${dataset.name}`)
+                .addField(
+                  "Use",
+                  app.checkMark(
+                    dataset.globalPermission !== app.eddy.Permissions.NONE
+                  ),
+                  true
+                )
+                .addField(
+                  "Write",
+                  app.checkMark(
+                    dataset.globalPermission === app.eddy.Permissions.WRITE
+                  ),
+                  true
+                )
+                .setColor("BLUE")
+                .setTimestamp()
+                .setFooter(app.footer)
+            )
           },
         },
         {
-          name: "name",
+          name: "specific",
           async run(message) {
-            await message.reply("dataset command is not yet implemented.")
+            await message.channel.send(
+              "specific parameters overview here. pagination system"
+            )
           },
+          subs: [
+            {
+              name: "add",
+              async run(message) {},
+            },
+            {
+              name: "delete",
+              async run(message) {},
+            },
+          ],
         },
       ],
     },
