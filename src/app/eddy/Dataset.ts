@@ -211,6 +211,14 @@ export class Dataset {
     return this.data.specificPermissions
   }
 
+  addSpecificPermission(targetID: Discord.Snowflake, targetKind: TargetKinds, permission: Permissions) {
+    return Dataset.addSpecificPermission(this.name, targetID, targetKind, permission)
+  }
+
+  deleteSpecificPermission(targetID: Discord.Snowflake) {
+    return Dataset.deleteSpecificPermission(this.name, targetID)
+  }
+
   delete() {
     return Dataset.deleteDataset(this._name)
   }
