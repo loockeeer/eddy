@@ -183,7 +183,7 @@ const command: app.Command = {
           app.Paginator.divider(await Promise.all(formatted), 10).map(
             (page) => {
               return new app.MessageEmbed()
-                .setColor("BLURPLE")
+                .setColor("INFO")
                 .setAuthor(
                   "Datasets list",
                   message.client.user?.displayAvatarURL({ dynamic: true })
@@ -509,7 +509,7 @@ const command: app.Command = {
             new app.Paginator(
               app.Paginator.divider(formatted, 10).map((page) => {
                 const embed = new app.MessageEmbed()
-                  .setColor("BLURPLE")
+                  .setColor("INFO")
                   .setAuthor(
                     "Specific permissions list",
                     message.client.user?.displayAvatarURL({ dynamic: true })
