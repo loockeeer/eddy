@@ -461,9 +461,66 @@ const command: app.Command = {
         },
         {
           name: "specific",
+          positional: [
+            {
+              name: "dataset",
+              description: "The dataset you want to choose",
+              checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
+              checkValueError: "There is not any dataset with that name : {}",
+              castValue: (datasetName) => new app.eddy.Dataset(datasetName),
+              required: true,
+            },
+          ],
           async run(message) {
-            await message.channel.send(
-              "specific parameters overview here. pagination system"
+            const specifics = (message.positional.dataset as app.eddy.Dataset)
+              .specificPermissions
+            if (specifics.length === 0) {
+              return message.channel.send(
+                app.messageEmbed(`No specific permissions found :/`, message.author, "BLUE")
+              )
+            }
+            const formatted = await Promise.all(specifics.sort((a, b) => {
+              return a.targetKind === app.eddy.TargetKinds.GUILD &&
+                b.targetKind === app.eddy.TargetKinds.USER
+                ? -1
+                : 1
+            })
+              .map(async p=>{
+                if(p.targetKind === app.eddy.TargetKinds.GUILD) {
+                  return {
+                    target: message.client.guilds.cache.get(p.target),
+                    permissions: `Use : ${app.checkMark(
+                      p.permission !== app.eddy.Permissions.NONE
+                    )} \n Write : ${app.checkMark(
+                      p.permission === app.eddy.Permissions.WRITE
+                    )}`
+                  }
+                } else {
+                  return {
+                    target: await message.client.users.fetch(p.target),
+                    permissions: `Use : ${app.checkMark(
+                      p.permission !== app.eddy.Permissions.NONE
+                    )} \n Write : ${app.checkMark(
+                      p.permission === app.eddy.Permissions.WRITE
+                    )}`
+                  }
+                }
+              }))
+            new app.Paginator(
+              app.Paginator.divider(formatted, 10).map((page) => {
+                const embed = new app.MessageEmbed()
+                  .setColor("BLURPLE")
+                  .setAuthor(
+                    "Specific permissions list",
+                    message.client.user?.displayAvatarURL({ dynamic: true })
+                  )
+                  for(const perm of page) {
+                    embed.addField(perm.target, perm.permissions)
+                  }
+                  return embed
+              }),
+              message.channel,
+              (reaction, user) => user.id === message.author.id
             )
           },
           subs: [
