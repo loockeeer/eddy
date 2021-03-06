@@ -28,7 +28,7 @@ export function calculatePermissions(
   if (returnAll)
     return {
       globalPermission,
-      guildPermission: guildPermission ?? permission,
+      guildPermission: guildPermission ?? globalPermission,
       userPermission: userPermission ?? permission,
     }
   else return permission
