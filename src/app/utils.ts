@@ -63,12 +63,13 @@ export async function channelCastValue(value: string, message: CommandMessage) {
 
 export async function userCheckValue(value: string, message: CommandMessage) {
   if (value.match(/^<@!?(\d+)>$/)) {
-    const ID = value.match(/^<#(\d+)>$/)?.[1]
-    const user = await message.client.users.fetch(ID as string)
+    console.log(value.match(/^<@!?(\d+)>$/))
+    const ID = value.match(/^<@!?(\d+)>$/)?.[1]
+    const user = await message.client.users.fetch(ID as string).catch(e=>false)
     return !!user
-  } else if (value.match(/d+/)) {
-    const ID = value.match(/d+/)?.[1]
-    const user = await message.client.users.fetch(ID as string)
+  } else if (value.match(/\d+/)) {
+    const ID = value.match(/\d+/)?.[0]
+    const user = await message.client.users.fetch(ID as string).catch(e=>false)
     return !!user
   } else {
     const user = message.client.users.cache.find((user) =>
@@ -80,11 +81,11 @@ export async function userCheckValue(value: string, message: CommandMessage) {
 
 export async function userCastValue(value: string, message: CommandMessage) {
   if (value.match(/^<@!?(\d+)>$/)) {
-    const ID = value.match(/^<#(\d+)>$/)?.[1]
-    return await message.client.users.fetch(ID as string)
-  } else if (value.match(/d+/)) {
-    const ID = value.match(/d+/)?.[1]
-    return await message.client.users.fetch(ID as string)
+    const ID = value.match(/^<@!?(\d+)>$/)?.[1]
+    return await message.client.users.fetch(ID as string).catch(e=>undefined)
+  } else if (value.match(/\d+/)) {
+    const ID = value.match(/\d+/)?.[0]
+    return await message.client.users.fetch(ID as string).catch(e=>undefined)
   } else {
     return message.client.users.cache.find((user) =>
       user.username.toLowerCase().includes(value.toLowerCase())
@@ -94,30 +95,30 @@ export async function userCastValue(value: string, message: CommandMessage) {
 
 export async function memberCheckValue(value: string, message: CommandMessage) {
   if (value.match(/^<@!?(\d+)>$/)) {
-    const ID = value.match(/^<#(\d+)>$/)?.[1]
-    const member = await message?.guild?.members.fetch(ID as string)
+    const ID = value.match(/^<@!?(\d+)>$/)?.[1]
+    const member = await message?.guild?.members.fetch(ID as string).catch(e=>false)
     return !!member
-  } else if (value.match(/d+/)) {
-    const ID = value.match(/d+/)?.[1]
-    const member = await message?.guild?.members.fetch(ID as string)
+  } else if (value.match(/\d+/)) {
+    const ID = value.match(/\d+/)?.[0]
+    const member = await message?.guild?.members.fetch(ID as string).catch(e=>false)
     return !!member
   } else {
     const user = await message?.guild?.members?.fetch({
       query: value,
       limit: 1,
-    })
+    }).catch(e=>false)
     return !!user
   }
 }
 
 export async function memberCastValue(value: string, message: CommandMessage) {
   if (value.match(/^<@!?(\d+)>$/)) {
-    const ID = value.match(/^<#(\d+)>$/)?.[1]
-    return await message?.guild?.members.fetch(ID as string)
-  } else if (value.match(/d+/)) {
-    const ID = value.match(/d+/)?.[1]
-    return await message?.guild?.members.fetch(ID as string)
+    const ID = value.match(/^<@!?(\d+)>$/)?.[1]
+    return message?.guild?.members.fetch(ID as string).catch(e => undefined);
+  } else if (value.match(/\d+/)) {
+    const ID = value.match(/\d+/)?.[0]
+    return message?.guild?.members.fetch(ID as string).catch(e => undefined);
   } else {
-    return await message?.guild?.members?.fetch({ query: value, limit: 1 })
+    return (await message?.guild?.members?.fetch({ query: value, limit: 1 }).catch(e=>undefined))?.first()
   }
 }

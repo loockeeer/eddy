@@ -115,7 +115,7 @@ export class Dataset {
     return newPermission
   }
 
-  static addSpecificPermission(
+  static setSpecificPermission(
     name: string,
     target: Discord.Snowflake,
     targetKind: TargetKinds,
@@ -131,8 +131,7 @@ export class Dataset {
       target,
       permission,
     }
-
-    datasets.push(name, datasetPermission, "specificPermissions")
+    if(!datasets.get(name)?.specificPermissions?.find(sp=>sp.target === target)) datasets.push(name, datasetPermission, "specificPermissions")
     return datasetPermission
   }
 
@@ -211,8 +210,8 @@ export class Dataset {
     return this.data.specificPermissions
   }
 
-  addSpecificPermission(targetID: Discord.Snowflake, targetKind: TargetKinds, permission: Permissions) {
-    return Dataset.addSpecificPermission(this.name, targetID, targetKind, permission)
+  setSpecificPermission(targetID: Discord.Snowflake, targetKind: TargetKinds, permission: Permissions) {
+    return Dataset.setSpecificPermission(this.name, targetID, targetKind, permission)
   }
 
   deleteSpecificPermission(targetID: Discord.Snowflake) {

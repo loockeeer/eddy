@@ -183,7 +183,7 @@ const command: app.Command = {
           app.Paginator.divider(await Promise.all(formatted), 10).map(
             (page) => {
               return new app.MessageEmbed()
-                .setColor("INFO")
+                .setColor("BLUE")
                 .setAuthor(
                   "Datasets list",
                   message.client.user?.displayAvatarURL({ dynamic: true })
@@ -482,13 +482,13 @@ const command: app.Command = {
             const formatted = await Promise.all(specifics.sort((a, b) => {
               return a.targetKind === app.eddy.TargetKinds.GUILD &&
                 b.targetKind === app.eddy.TargetKinds.USER
-                ? -1
-                : 1
+                ? 1
+                : -1
             })
               .map(async p=>{
                 if(p.targetKind === app.eddy.TargetKinds.GUILD) {
                   return {
-                    target: message.client.guilds.cache.get(p.target),
+                    target: message.client.guilds.cache.get(p.target)?.name,
                     permissions: `Use : ${app.checkMark(
                       p.permission !== app.eddy.Permissions.NONE
                     )} \n Write : ${app.checkMark(
@@ -497,7 +497,7 @@ const command: app.Command = {
                   }
                 } else {
                   return {
-                    target: await message.client.users.fetch(p.target),
+                    target: (await message.client.users.fetch(p.target)).tag,
                     permissions: `Use : ${app.checkMark(
                       p.permission !== app.eddy.Permissions.NONE
                     )} \n Write : ${app.checkMark(
@@ -509,7 +509,7 @@ const command: app.Command = {
             new app.Paginator(
               app.Paginator.divider(formatted, 10).map((page) => {
                 const embed = new app.MessageEmbed()
-                  .setColor("INFO")
+                  .setColor("BLUE")
                   .setAuthor(
                     "Specific permissions list",
                     message.client.user?.displayAvatarURL({ dynamic: true })
@@ -525,12 +525,109 @@ const command: app.Command = {
           },
           subs: [
             {
-              name: "add",
-              async run(message) {},
+              name: "set",
+              positional: [
+                {
+                  name: "dataset",
+                  description: "The dataset you want to choose",
+                  checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
+                  checkValueError: "There is not any dataset with that name : {}",
+                  castValue: (datasetName) => new app.eddy.Dataset(datasetName),
+                  required: true,
+                },
+                {
+                  name: "target",
+                  description: "User/GuildID target for that specific permission",
+                  checkValue: async (v, message) => await app.userCheckValue(v, message) || !!message.client.guilds.cache.get(v),
+                  checkValueError: "There is not any guild/user corresponding to {}",
+                  castValue: async (v, message) => await app.userCastValue(v, message) || message.client.guilds.cache.get(v),
+                  required: true
+                },
+                {
+                  name: "permission",
+                  description: "The permission level",
+                  checkValue: (v) =>
+                    ["write", "use", "none"].includes(v.toLowerCase()),
+                  checkValueError:
+                    "Permission must be a number and must be none, use or write",
+                  castValue: (v: string) =>
+                    app.eddy.Permissions[
+                      (v.toUpperCase() as unknown) as app.eddy.Permissions
+                      ],
+                  required: true
+                },
+              ],
+              async run(message) {
+                const dataset: app.eddy.Dataset = message.positional.dataset
+                const target: app.Guild | app.User = message.positional.target
+                const permission: app.eddy.Permissions = message.positional.permission
+                const old = dataset.specificPermissions.find(sp=>sp.target === target.id)?.permission
+
+                dataset.setSpecificPermission(target.id, target instanceof app.Guild ? app.eddy.TargetKinds.GUILD : app.eddy.TargetKinds.USER, permission)
+
+                return message.channel.send(
+                  new app.MessageEmbed()
+                    .setAuthor(
+                      message.author.tag,
+                      message.author.displayAvatarURL({ dynamic: true })
+                    )
+                    .setDescription(
+                      `Successfully changed specific permission for dataset ${dataset.name} for target ${target instanceof app.Guild ? target.name : target.tag}`
+                    )
+                    .addField(
+                      "Old :",
+                      old !== undefined ? `Use : ${app.checkMark(
+                        old !== app.eddy.Permissions.NONE
+                      )} \n Write : ${app.checkMark(
+                        old === app.eddy.Permissions.WRITE
+                      )}` : `No specific permissions were found`,
+                      true
+                    )
+                    .addField(
+                      "New :",
+                      `Use : ${app.checkMark(
+                        permission !== app.eddy.Permissions.NONE
+                      )} \n Write : ${app.checkMark(
+                        permission === app.eddy.Permissions.WRITE
+                      )}`,
+                      true
+                    )
+                    .setColor("GREEN")
+                    .setTimestamp()
+                    .setFooter(app.footer)
+                )
+              },
             },
             {
               name: "delete",
-              async run(message) {},
+              positional: [
+                {
+                  name: "dataset",
+                  description: "The dataset you want to choose",
+                  checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
+                  checkValueError: "There is not any dataset with that name : {}",
+                  castValue: (datasetName) => new app.eddy.Dataset(datasetName),
+                  required: true,
+                },
+                {
+                  name: "target",
+                  description: "User/GuildID target for that specific permission",
+                  checkValue: async (v, message) => await app.userCheckValue(v, message) || !!message.client.guilds.cache.get(v),
+                  checkValueError: "There is not any guild/user corresponding to {}",
+                  castValue: async (v, message) => await app.userCastValue(v, message) || message.client.guilds.cache.get(v),
+                  required: true
+                },
+              ],
+              async run(message) {
+                const dataset: app.eddy.Dataset = message.positional.dataset
+                const target: app.Guild | app.User = message.positional.target
+
+                dataset.deleteSpecificPermission(target.id)
+
+                return message.channel.send(
+                  app.messageEmbed(`Successfully deleted specific permission for ${target instanceof app.Guild ? target.name : target.tag}`, message.author, "GREEN")
+                )
+              },
             },
           ],
         },
