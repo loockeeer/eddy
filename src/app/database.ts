@@ -16,4 +16,12 @@ export const datasets = new Enmap<Discord.Snowflake, DatasetInterface>({
 export const links = new Enmap<Discord.Snowflake, string>({
   name: "links",
 })
-// Docs: https://enmap.evie.dev/
+
+export const autoTalk = new Enmap<Discord.Snowflake, AutoTalk>({
+  name: "autoTalk"
+})
+
+export interface AutoTalk {
+  datasetName: string
+  probability: number
+}
