@@ -3,6 +3,7 @@ import * as app from "../app"
 // @ts-ignore
 const command: app.Command = {
   name: "dataset",
+  aliases: ["d", "ds"],
   description: "Show information about a dataset",
   positional: [
     {
@@ -66,6 +67,8 @@ const command: app.Command = {
         )}`,
         true
       )
+      .addField("Ngrams",
+        dataset.ngrams)
       .setColor("BLUE")
       .setTimestamp()
       .setFooter(app.footer)
@@ -218,8 +221,28 @@ const command: app.Command = {
           required: false,
           default: "false",
         },
+        {
+          name: "ngrams",
+          description: "Ngrams count, could not be changed",
+          castValue: "number",
+          checkValue: (v) => Number(v) > 0 && Number(v) < 10,
+          checkValueError: "Ngrams must be a number and between 0 and 10",
+          required: false,
+          default: "3"
+        }
       ],
       async run(message) {
+        if(app.eddy.Dataset.getDatasetsByOwnerID(message.args.user || !message?.guild
+          ? message.author.id
+          : message.guild.id).length >= app.maxDataset) {
+          return message.channel.send(
+            app.messageEmbed(
+              `${message.args.user ? "You already" : "This guild already"} owns ${app.maxDataset} dataset${app.maxDataset > 1 ? "s" : ""} ! Please remove one before creating another`,
+              message.author,
+              "RED"
+            )
+          )
+        }
         try {
           app.eddy.Dataset.createDataset(
             message.positional.name,
@@ -228,7 +251,8 @@ const command: app.Command = {
               : message.guild.id,
             message.args.user || !message?.guild
               ? app.eddy.TargetKinds.USER
-              : app.eddy.TargetKinds.GUILD
+              : app.eddy.TargetKinds.GUILD,
+            message.args.ngrams
           )
         } catch (e) {
           if (e instanceof app.eddy.DatasetExistsError) {
@@ -241,6 +265,9 @@ const command: app.Command = {
             )
           }
         }
+
+
+
         return message.channel.send(
           app.messageEmbed(
             `Dataset created with name ${message.positional.name}`,

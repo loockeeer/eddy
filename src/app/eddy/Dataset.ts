@@ -26,6 +26,7 @@ export interface DatasetInterface {
   createdAt: number
   ownerID: Discord.Snowflake
   ownerKind: TargetKinds
+  ngrams: number
 }
 
 export class DatasetExistsError extends Error {
@@ -43,12 +44,13 @@ export class DatasetNotExistsError extends Error {
 }
 
 export class Dataset {
-  private _name: string
+  private readonly _name: string
 
   static createDataset(
     name: string,
     ownerID: Discord.Snowflake,
-    ownerKind: TargetKinds
+    ownerKind: TargetKinds,
+    ngrams = 3
   ): DatasetInterface {
     if (Dataset.exists(name))
       throw new DatasetExistsError(`Dataset with name "${name}" already exists`)
@@ -65,6 +67,7 @@ export class Dataset {
       ownerID,
       ownerKind,
       createdAt: Date.now(),
+      ngrams
     }
     datasets.set(name, dataset)
     return dataset
@@ -78,8 +81,8 @@ export class Dataset {
     return datasets.has(name)
   }
 
-  static existsOwnerID(ownerID: Discord.Snowflake): boolean {
-    return datasets.has(ownerID, "ownerID")
+  static getDatasetsByOwnerID(ownerID: Discord.Snowflake): DatasetInterface[] {
+    return datasets.filter(d=>d.ownerID === ownerID).array()
   }
 
   static deleteDataset(name: string): DatasetInterface {
@@ -188,6 +191,10 @@ export class Dataset {
 
   get name() {
     return this._name
+  }
+
+  get ngrams() {
+    return this.data.ngrams
   }
 
   get ownerID() {

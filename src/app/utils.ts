@@ -3,6 +3,7 @@ import * as database from "./database"
 import { CommandMessage } from "./handler"
 
 export const footer = `Eddy Malou - Made by Loockeeer#8522`
+export const maxDataset = 2
 
 export async function prefix(guild?: Discord.Guild): Promise<string> {
   let prefix = process.env.PREFIX as string
