@@ -1,8 +1,8 @@
 {
   "name": "eddy",
   "version": "beta-1.0.0",
-  "author": "ghom",
-  "description": "Discord bot in TypeScript",
+  "author": "loockeeer",
+  "description": "Discord dumb chatbot written in JavaScript",
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
