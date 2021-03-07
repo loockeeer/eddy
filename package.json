@@ -6,7 +6,7 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
-    "start": "tsc && node .",
+    "start": "tsc && node prestart.js && node .",
     "watch": "tsc-watch --onSuccess \"node .\"",
     "format": "prettier --write src"
   },

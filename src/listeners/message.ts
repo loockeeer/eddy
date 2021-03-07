@@ -226,11 +226,11 @@ const listener: app.Listener<"message"> = {
             getValue(),
             message
           )
-
           if (!checked) return
         }
 
         if (positional.castValue) {
+
           const casted = await app.castValue(
             positional,
             "positional",

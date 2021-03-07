@@ -1,5 +1,6 @@
 import { Dataset, Permissions, TargetKinds } from "../Dataset"
 import Discord from "discord.js"
+import {calculatePermissions} from "./calculatePermissions";
 
 function generateText(
   dataset: Dataset,
@@ -15,26 +16,7 @@ export function generate(
   content: string,
   executor: Discord.Message
 ): string {
-  let userPermission: Permissions | undefined = undefined
-  let guildPermission: Permissions | undefined = undefined
-  let globalPermission: Permissions = dataset.globalPermission
-
-  for (const specific of dataset.specificPermissions) {
-    if (
-      specific.targetKind === TargetKinds.GUILD &&
-      executor?.guild?.id === specific.target
-    )
-      guildPermission = specific.permission
-
-    if (
-      specific.targetKind === TargetKinds.USER &&
-      executor?.id === specific.target
-    )
-      userPermission = specific.permission
-  }
-
-  const permission = userPermission || guildPermission || globalPermission
-
+  const permission = calculatePermissions(dataset, executor)
   if (permission === Permissions.NONE) throw new Error("Unauthorized")
 
   return generateText(

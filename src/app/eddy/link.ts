@@ -18,3 +18,7 @@ export function unlink(
 export function getLinksCount(dataset: Dataset): number {
   return links.filterArray((datasetName) => datasetName === dataset.name).length
 }
+
+export function getLink(channel: Discord.Channel) {
+  return links.get(channel.id) ?? null
+}

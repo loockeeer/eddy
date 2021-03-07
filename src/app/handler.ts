@@ -122,12 +122,12 @@ export async function checkValue<Message extends CommandMessage>(
   message: Message
 ): Promise<boolean> {
   if (!subject.checkValue) return true
-
   if (
     typeof subject.checkValue === "function"
       ? !(await subject.checkValue(value, message))
       : !subject.checkValue.test(value)
   ) {
+
     await message.channel.send(
       new app.MessageEmbed()
         .setColor("RED")

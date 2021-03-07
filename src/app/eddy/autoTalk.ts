@@ -1,6 +1,6 @@
 import Discord from "discord.js"
 import {Dataset} from "./Dataset"
-import {autoTalk} from "../database";
+import {autoTalk, links} from "../database";
 
 export function setAutoTalk(guild: Discord.Guild, dataset: Dataset, probability: number) {
   autoTalk.set(guild.id, {
@@ -16,4 +16,8 @@ export function setAutoTalk(guild: Discord.Guild, dataset: Dataset, probability:
 export function removeAutoTalk(guild: Discord.Guild) {
   autoTalk.delete(guild.id)
   return guild.id
+}
+
+export function getAutoTalk(guild: Discord.Guild) {
+  return autoTalk.get(guild.id) ?? null
 }

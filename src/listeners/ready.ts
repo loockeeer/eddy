@@ -10,6 +10,7 @@ const listener: app.Listener<"ready"> = {
   once: true,
   async run() {
     app.log("Ok i'm ready!", "system")
+
     figlet(
       require(path.join(process.cwd(), "package.json")).name,
       (err, value) => {

@@ -1,16 +1,18 @@
 import Discord from "discord.js"
+import fs from "fs/promises"
+import path from "path"
 import { datasets } from "../database"
-import { CommandMessage } from "../handler"
+import {datasetsPath} from "../utils"
 
 export enum Permissions {
-  "NONE",
-  "USE",
-  "WRITE",
+  "NONE" = "NONE",
+  "USE" = "USE",
+  "WRITE" = "WRITE",
 }
 
 export enum TargetKinds {
-  "USER",
-  "GUILD",
+  "USER"= "USER",
+  "GUILD"= "GUILD",
 }
 
 export interface DatasetPermission {
@@ -46,12 +48,12 @@ export class DatasetNotExistsError extends Error {
 export class Dataset {
   private readonly _name: string
 
-  static createDataset(
+  static async createDataset(
     name: string,
     ownerID: Discord.Snowflake,
     ownerKind: TargetKinds,
     ngrams = 3
-  ): DatasetInterface {
+  ): Promise<DatasetInterface> {
     if (Dataset.exists(name))
       throw new DatasetExistsError(`Dataset with name "${name}" already exists`)
     const dataset = {
@@ -67,9 +69,10 @@ export class Dataset {
       ownerID,
       ownerKind,
       createdAt: Date.now(),
-      ngrams
+      ngrams,
     }
     datasets.set(name, dataset)
+    await fs.writeFile(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`), "{}")
     return dataset
   }
 
@@ -81,27 +84,29 @@ export class Dataset {
     return datasets.has(name)
   }
 
-  static getDatasetsByOwnerID(ownerID: Discord.Snowflake): DatasetInterface[] {
-    return datasets.filter(d=>d.ownerID === ownerID).array()
+  static getDatasetsByOwnerID(ownerID: Discord.Snowflake): Dataset[] {
+    return datasets.filter((d) => d.ownerID === ownerID).map(d=>new Dataset(d.name))
   }
 
-  static deleteDataset(name: string): DatasetInterface {
-    if (!Dataset.exists(name))
+  static async deleteDataset(name: string): Promise<DatasetInterface> {
+    const dataset = Dataset.getDataset(name)
+    if (!dataset)
       throw new DatasetNotExistsError(
         `Dataset with name "${name}" does not exists`
       )
 
-    const dataset = datasets.ensure(name, {} as DatasetInterface)
     datasets.delete(name)
+    await fs.unlink(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`))
     return dataset
   }
 
   static getDataset(name: string): DatasetInterface {
-    if (!Dataset.exists(name))
+    const dataset = datasets.get(name)
+    if (!dataset)
       throw new DatasetNotExistsError(
         `Dataset with name "${name}" does not exists`
       )
-    return datasets.ensure(name, {} as DatasetInterface)
+    return dataset
   }
 
   static changeGlobalPermission(
@@ -134,7 +139,12 @@ export class Dataset {
       target,
       permission,
     }
-    if(!datasets.get(name)?.specificPermissions?.find(sp=>sp.target === target)) datasets.push(name, datasetPermission, "specificPermissions")
+    if (
+      !datasets
+        .get(name)
+        ?.specificPermissions?.find((sp) => sp.target === target)
+    )
+      datasets.push(name, datasetPermission, "specificPermissions")
     return datasetPermission
   }
 
@@ -142,12 +152,12 @@ export class Dataset {
     name: string,
     target: Discord.Snowflake
   ): DatasetPermission {
-    if (!Dataset.exists(name))
+    const dataset = Dataset.getDataset(name)
+    if (!dataset)
       throw new DatasetNotExistsError(
         `Dataset with name "${name}" does not exists`
       )
 
-    const dataset = datasets.ensure(name, {} as DatasetInterface)
     const toDelete = dataset.specificPermissions.find(
       (el) => el.target === target
     )
@@ -162,19 +172,6 @@ export class Dataset {
     )
 
     return toDelete
-  }
-
-  static getByName(name: string) {
-    return new Dataset(name)
-  }
-
-  static getByOwnerID(ownerID: Discord.Snowflake) {
-    const name = datasets.findKey((dataset) => dataset.ownerID === ownerID)
-    if (!name)
-      return new DatasetNotExistsError(
-        `User/Guild with ID ${ownerID} does not have any dataset`
-      )
-    return new Dataset(name)
   }
 
   constructor(name: string) {
@@ -217,8 +214,17 @@ export class Dataset {
     return this.data.specificPermissions
   }
 
-  setSpecificPermission(targetID: Discord.Snowflake, targetKind: TargetKinds, permission: Permissions) {
-    return Dataset.setSpecificPermission(this.name, targetID, targetKind, permission)
+  setSpecificPermission(
+    targetID: Discord.Snowflake,
+    targetKind: TargetKinds,
+    permission: Permissions
+  ) {
+    return Dataset.setSpecificPermission(
+      this.name,
+      targetID,
+      targetKind,
+      permission
+    )
   }
 
   deleteSpecificPermission(targetID: Discord.Snowflake) {

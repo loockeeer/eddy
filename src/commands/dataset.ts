@@ -16,7 +16,7 @@ const command: app.Command = {
     },
   ],
   async run(message) {
-    const dataset = message.positional.dataset as app.eddy.Dataset
+    const dataset: app.eddy.Dataset = message.positional.dataset
     const { guildPermission, userPermission } = app.eddy.calculatePermissions(
       dataset,
       message,
@@ -67,8 +67,7 @@ const command: app.Command = {
         )}`,
         true
       )
-      .addField("Ngrams",
-        dataset.ngrams)
+      .addField("Ngrams", dataset.ngrams)
       .setColor("BLUE")
       .setTimestamp()
       .setFooter(app.footer)
@@ -86,7 +85,7 @@ const command: app.Command = {
           checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
           checkValueError: "There is not any dataset with that name : {}",
           castValue: (datasetName) => new app.eddy.Dataset(datasetName),
-          required: true,
+          default: "",
         },
         {
           name: "channel",
@@ -99,12 +98,136 @@ const command: app.Command = {
           checkValueError: 'There is not any channel "{}" in this guild !',
           castValue: async (value, message) =>
             await app.channelCastValue(value, message),
-          required: false,
+        },
+      ],
+      args: [
+        {
+          name: "autoTalk",
+          description:
+            "Autotalk must be number (percentage actually) which represent the probability for eddy to talk in the server by himself. Use 0% to disable.",
+          castValue: "number",
+          checkValue: (v) => {
+            return /\d+(.\d+)?/.test(v) && Number(v) >= 0 && Number(v) <= 100
+          },
+          checkValueError:
+            "AutoTalk must be a number and between 0 and 100 included",
+        },
+        {
+          name: "list",
+          description:
+            "Whether or not you want to list the links created on this guild",
+          castValue: "boolean",
+          checkValue: /true|false/,
+          checkValueError: "List must be a boolean (false/true)",
+          default: "false",
         },
       ],
       async run(message) {
         const dataset = message.positional.dataset
+        if (message.args.list) {
+          let links
+          if (!message.guild) {
+            links = app.database.links.ensure(message.channel.id, "")
+            links = links
+              ? [`**${message.channel}** linked with dataset **${links}**`]
+              : undefined
+          } else {
+            links = message.guild.channels.cache
+              .map((c) => ({
+                channel: c,
+                link: app.database.links.ensure(c.id, ""),
+              }))
+              .filter((c) => !!c.link)
+              .map((c) => `**${c.channel}** linked with dataset **${c.link}**`)
+          }
 
+          if (!links) {
+            return message.channel.send(
+              app.messageEmbed(
+                `There is no link in this ${message.guild ? "guild" : "DM"} !`,
+                message.author,
+                "RED"
+              )
+            )
+          }
+          return new app.Paginator(
+            app.Paginator.divider(links, 10).map((page, index) => {
+              const embed = new app.MessageEmbed()
+                .setColor("BLUE")
+                .setAuthor(
+                  "Links list",
+                  message.client.user?.displayAvatarURL({ dynamic: true })
+                )
+                .setDescription(page.join("\n"))
+              if (index === 0 && message.guild) {
+                const autoTalk = app.eddy.getAutoTalk(message.guild)
+                embed.addField(
+                  "AutoTalk",
+                  autoTalk
+                    ? `Dataset : ${autoTalk.datasetName}\nProbability: ${
+                        autoTalk.probability * 100
+                      }%`
+                    : "AutoTalk is not configured on this guild"
+                )
+              }
+              return embed
+            }),
+            message.channel,
+            (reaction, user) => user.id === message.author.id
+          )
+        }
+
+        if (!app.eddy.Dataset.exists(dataset.name)) {
+          return message.channel.send(
+            new app.MessageEmbed()
+              .setColor("RED")
+              .setAuthor(
+                `Missing positional "${this.positional?.[0]?.name}"`,
+                message.client.user?.displayAvatarURL()
+              )
+              .setDescription(
+                this.positional?.[0]?.description
+                  ? "Description: " + this.positional?.[0]?.description
+                  : `Example: \`--${this.positional?.[0]?.name}=someValue\``
+              )
+          )
+        }
+
+        if (message.args.autoTalk !== null) {
+          if (!message?.guild) {
+            return message.channel.send(
+              new app.MessageEmbed()
+                .setColor("RED")
+                .setAuthor(
+                  "This option is guild only.",
+                  message.client.user?.displayAvatarURL()
+                )
+            )
+          }
+          if (message.args.autoTalk === 0) {
+            app.eddy.removeAutoTalk(message.guild)
+            return message.channel.send(
+              app.messageEmbed(
+                `Successfully removed autoTalk feature on this guild`,
+                message.author,
+                "GREEN"
+              )
+            )
+          } else {
+            app.eddy.setAutoTalk(
+              message.guild,
+              dataset,
+              message.args.autoTalk / 100
+            )
+            return message.channel.send(
+              app.messageEmbed(
+                `Successfully set autoTalk feature using dataset ${dataset.name} and probability ${message.args.autoTalk}%`,
+                message.author,
+                "GREEN"
+              )
+            )
+          }
+        }
         if (
           app.eddy.calculatePermissions(dataset, message) ===
           app.eddy.Permissions.NONE
@@ -135,17 +258,15 @@ const command: app.Command = {
       positional: [
         {
           name: "channel",
-          description: "The channel to unlink",
-          checkValue: (channelID, message) =>
+          description: "The channel to link",
+          checkValue: async (value, message) =>
             !message?.guild
               ? true
-              : message?.guild?.channels.cache.has(channelID),
+              : await app.channelCheckValue(value, message),
           default: (message) => message.channel.id,
-          checkValueError:
-            "There is not any channel with id {} in this guild !",
-          castValue: (channelID, message) =>
-            message.client.channels.cache.get(channelID),
-          required: false,
+          checkValueError: 'There is not any channel "{}" in this guild !',
+          castValue: async (value, message) =>
+            await app.channelCastValue(value, message),
         },
       ],
       async run(message) {
@@ -207,8 +328,8 @@ const command: app.Command = {
         {
           name: "name",
           description: "The name of the new dataset",
-          checkValue: (value) => !app.eddy.Dataset.exists(value),
-          checkValueError: "A dataset already exists with name {}",
+          checkValue: (value) => !app.eddy.Dataset.exists(value) && !/\W/g.test(value),
+          checkValueError: "A dataset already exists with name {} or it match this regex : /\\W/g",
         },
       ],
       args: [
@@ -228,23 +349,31 @@ const command: app.Command = {
           checkValue: (v) => Number(v) > 0 && Number(v) < 10,
           checkValueError: "Ngrams must be a number and between 0 and 10",
           required: false,
-          default: "3"
-        }
+          default: "3",
+        },
       ],
       async run(message) {
-        if(app.eddy.Dataset.getDatasetsByOwnerID(message.args.user || !message?.guild
-          ? message.author.id
-          : message.guild.id).length >= app.maxDataset) {
+        if (
+          app.eddy.Dataset.getDatasetsByOwnerID(
+            message.args.user || !message?.guild
+              ? message.author.id
+              : message.guild.id
+          ).length >= app.maxDataset
+        ) {
           return message.channel.send(
             app.messageEmbed(
-              `${message.args.user ? "You already" : "This guild already"} owns ${app.maxDataset} dataset${app.maxDataset > 1 ? "s" : ""} ! Please remove one before creating another`,
+              `${
+                message.args.user ? "You already" : "This guild already"
+              } owns ${app.maxDataset} dataset${
+                app.maxDataset > 1 ? "s" : ""
+              } ! Please remove one before creating another`,
               message.author,
               "RED"
             )
           )
         }
         try {
-          app.eddy.Dataset.createDataset(
+          await app.eddy.Dataset.createDataset(
             message.positional.name,
             message.args.user || !message?.guild
               ? message.author.id
@@ -265,8 +394,6 @@ const command: app.Command = {
             )
           }
         }
-
-
 
         return message.channel.send(
           app.messageEmbed(
@@ -373,17 +500,16 @@ const command: app.Command = {
                 ["write", "use", "none"].includes(v.toLowerCase()),
               checkValueError:
                 "Permission must be a number and must be none, use or write",
-              castValue: (v: string) =>
-                app.eddy.Permissions[
-                  (v.toUpperCase() as unknown) as app.eddy.Permissions
-                ],
-              default: "",
-              required: false,
+              castValue: v => {
+                console.log(v)
+                return v.toUpperCase()
+              },
+              default: ""
             },
           ],
           async run(message) {
             const dataset: app.eddy.Dataset = message.positional.dataset
-            if (message.positional.permission !== undefined) {
+            if (message.positional.permission) {
               if (
                 message.positional.dataset.data.ownerKind ===
                   app.eddy.TargetKinds.GUILD &&
@@ -499,40 +625,46 @@ const command: app.Command = {
             },
           ],
           async run(message) {
-            const specifics = (message.positional.dataset as app.eddy.Dataset)
-              .specificPermissions
+            const specifics: app.eddy.DatasetPermission[] = message.positional.dataset.specificPermissions
             if (specifics.length === 0) {
               return message.channel.send(
-                app.messageEmbed(`No specific permissions found :/`, message.author, "BLUE")
+                app.messageEmbed(
+                  `No specific permissions found :/`,
+                  message.author,
+                  "BLUE"
+                )
               )
             }
-            const formatted = await Promise.all(specifics.sort((a, b) => {
-              return a.targetKind === app.eddy.TargetKinds.GUILD &&
-                b.targetKind === app.eddy.TargetKinds.USER
-                ? 1
-                : -1
-            })
-              .map(async p=>{
-                if(p.targetKind === app.eddy.TargetKinds.GUILD) {
-                  return {
-                    target: message.client.guilds.cache.get(p.target)?.name,
-                    permissions: `Use : ${app.checkMark(
-                      p.permission !== app.eddy.Permissions.NONE
-                    )} \n Write : ${app.checkMark(
-                      p.permission === app.eddy.Permissions.WRITE
-                    )}`
+            const formatted = await Promise.all(
+              specifics
+                .sort((a, b) => {
+                  return a.targetKind === app.eddy.TargetKinds.GUILD &&
+                    b.targetKind === app.eddy.TargetKinds.USER
+                    ? 1
+                    : -1
+                })
+                .map(async (p) => {
+                  if (p.targetKind === app.eddy.TargetKinds.GUILD) {
+                    return {
+                      target: message.client.guilds.cache.get(p.target)?.name,
+                      permissions: `Use : ${app.checkMark(
+                        p.permission !== app.eddy.Permissions.NONE
+                      )} \n Write : ${app.checkMark(
+                        p.permission === app.eddy.Permissions.WRITE
+                      )}`,
+                    }
+                  } else {
+                    return {
+                      target: (await message.client.users.fetch(p.target)).tag,
+                      permissions: `Use : ${app.checkMark(
+                        p.permission !== app.eddy.Permissions.NONE
+                      )} \n Write : ${app.checkMark(
+                        p.permission === app.eddy.Permissions.WRITE
+                      )}`,
+                    }
                   }
-                } else {
-                  return {
-                    target: (await message.client.users.fetch(p.target)).tag,
-                    permissions: `Use : ${app.checkMark(
-                      p.permission !== app.eddy.Permissions.NONE
-                    )} \n Write : ${app.checkMark(
-                      p.permission === app.eddy.Permissions.WRITE
-                    )}`
-                  }
-                }
-              }))
+                })
+            )
             new app.Paginator(
               app.Paginator.divider(formatted, 10).map((page) => {
                 const embed = new app.MessageEmbed()
@@ -541,10 +673,10 @@ const command: app.Command = {
                     "Specific permissions list",
                     message.client.user?.displayAvatarURL({ dynamic: true })
                   )
-                  for(const perm of page) {
-                    embed.addField(perm.target, perm.permissions)
-                  }
-                  return embed
+                for (const perm of page) {
+                  embed.addField(perm.target, perm.permissions)
+                }
+                return embed
               }),
               message.channel,
               (reaction, user) => user.id === message.author.id
@@ -557,18 +689,26 @@ const command: app.Command = {
                 {
                   name: "dataset",
                   description: "The dataset you want to choose",
-                  checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
-                  checkValueError: "There is not any dataset with that name : {}",
+                  checkValue: (datasetName) =>
+                    app.eddy.Dataset.exists(datasetName),
+                  checkValueError:
+                    "There is not any dataset with that name : {}",
                   castValue: (datasetName) => new app.eddy.Dataset(datasetName),
                   required: true,
                 },
                 {
                   name: "target",
-                  description: "User/GuildID target for that specific permission",
-                  checkValue: async (v, message) => await app.userCheckValue(v, message) || !!message.client.guilds.cache.get(v),
-                  checkValueError: "There is not any guild/user corresponding to {}",
-                  castValue: async (v, message) => await app.userCastValue(v, message) || message.client.guilds.cache.get(v),
-                  required: true
+                  description:
+                    "User/GuildID target for that specific permission",
+                  checkValue: async (v, message) =>
+                    (await app.userCheckValue(v, message)) ||
+                    !!message.client.guilds.cache.get(v),
+                  checkValueError:
+                    "There is not any guild/user corresponding to {}",
+                  castValue: async (v, message) =>
+                    (await app.userCastValue(v, message)) ||
+                    message.client.guilds.cache.get(v),
+                  required: true,
                 },
                 {
                   name: "permission",
@@ -577,20 +717,26 @@ const command: app.Command = {
                     ["write", "use", "none"].includes(v.toLowerCase()),
                   checkValueError:
                     "Permission must be a number and must be none, use or write",
-                  castValue: (v: string) =>
-                    app.eddy.Permissions[
-                      (v.toUpperCase() as unknown) as app.eddy.Permissions
-                      ],
-                  required: true
+                  castValue: v => v.toUpperCase(),
+                  required: true,
                 },
               ],
               async run(message) {
                 const dataset: app.eddy.Dataset = message.positional.dataset
                 const target: app.Guild | app.User = message.positional.target
-                const permission: app.eddy.Permissions = message.positional.permission
-                const old = dataset.specificPermissions.find(sp=>sp.target === target.id)?.permission
-
-                dataset.setSpecificPermission(target.id, target instanceof app.Guild ? app.eddy.TargetKinds.GUILD : app.eddy.TargetKinds.USER, permission)
+                const permission: app.eddy.Permissions =
+                  message.positional.permission
+                const old = dataset.specificPermissions.find(
+                  (sp) => sp.target === target.id
+                )
+                if(old) dataset.deleteSpecificPermission(old.target)
+                dataset.setSpecificPermission(
+                  target.id,
+                  target instanceof app.Guild
+                    ? app.eddy.TargetKinds.GUILD
+                    : app.eddy.TargetKinds.USER,
+                  permission
+                )
 
                 return message.channel.send(
                   new app.MessageEmbed()
@@ -599,15 +745,21 @@ const command: app.Command = {
                       message.author.displayAvatarURL({ dynamic: true })
                     )
                     .setDescription(
-                      `Successfully changed specific permission for dataset ${dataset.name} for target ${target instanceof app.Guild ? target.name : target.tag}`
+                      `Successfully changed specific permission for dataset ${
+                        dataset.name
+                      } for target ${
+                        target instanceof app.Guild ? target.name : target.tag
+                      }`
                     )
                     .addField(
                       "Old :",
-                      old !== undefined ? `Use : ${app.checkMark(
-                        old !== app.eddy.Permissions.NONE
-                      )} \n Write : ${app.checkMark(
-                        old === app.eddy.Permissions.WRITE
-                      )}` : `No specific permissions were found`,
+                      old !== undefined
+                        ? `Use : ${app.checkMark(
+                            old.permission !== app.eddy.Permissions.NONE
+                          )} \n Write : ${app.checkMark(
+                        old.permission === app.eddy.Permissions.WRITE
+                          )}`
+                        : `No specific permissions were found`,
                       true
                     )
                     .addField(
@@ -631,18 +783,26 @@ const command: app.Command = {
                 {
                   name: "dataset",
                   description: "The dataset you want to choose",
-                  checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
-                  checkValueError: "There is not any dataset with that name : {}",
+                  checkValue: (datasetName) =>
+                    app.eddy.Dataset.exists(datasetName),
+                  checkValueError:
+                    "There is not any dataset with that name : {}",
                   castValue: (datasetName) => new app.eddy.Dataset(datasetName),
                   required: true,
                 },
                 {
                   name: "target",
-                  description: "User/GuildID target for that specific permission",
-                  checkValue: async (v, message) => await app.userCheckValue(v, message) || !!message.client.guilds.cache.get(v),
-                  checkValueError: "There is not any guild/user corresponding to {}",
-                  castValue: async (v, message) => await app.userCastValue(v, message) || message.client.guilds.cache.get(v),
-                  required: true
+                  description:
+                    "User/GuildID target for that specific permission",
+                  checkValue: async (v, message) =>
+                    (await app.userCheckValue(v, message)) ||
+                    !!message.client.guilds.cache.get(v),
+                  checkValueError:
+                    "There is not any guild/user corresponding to {}",
+                  castValue: async (v, message) =>
+                    (await app.userCastValue(v, message)) ||
+                    message.client.guilds.cache.get(v),
+                  required: true,
                 },
               ],
               async run(message) {
@@ -652,7 +812,13 @@ const command: app.Command = {
                 dataset.deleteSpecificPermission(target.id)
 
                 return message.channel.send(
-                  app.messageEmbed(`Successfully deleted specific permission for ${target instanceof app.Guild ? target.name : target.tag}`, message.author, "GREEN")
+                  app.messageEmbed(
+                    `Successfully deleted specific permission for ${
+                      target instanceof app.Guild ? target.name : target.tag
+                    }`,
+                    message.author,
+                    "GREEN"
+                  )
                 )
               },
             },
