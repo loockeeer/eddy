@@ -1,6 +1,6 @@
 {
   "name": "eddy",
-  "version": "1.0.0",
+  "version": "beta-1.0.0",
   "author": "ghom",
   "description": "Discord bot in TypeScript",
   "main": "dist/index.js",
