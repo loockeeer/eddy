@@ -16,12 +16,12 @@
   "license": "ISC",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/CamilleAbella/bot.ts.git"
+    "url": "git+https://github.com/loockeeer/eddy.git"
   },
   "bugs": {
-    "url": "https://github.com/CamilleAbella/bot.ts/issues"
+    "url": "https://github.com/loockeeer/eddy/issues"
   },
-  "homepage": "https://github.com/CamilleAbella/bot.ts#readme",
+  "homepage": "https://github.com/loockeeer/eddy#readme",
   "dependencies": {
     "@types/boxen": "^3.0.1",
     "@types/yargs-parser": "^20.2.0",
