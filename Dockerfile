@@ -4,8 +4,8 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN npm install better-sqlite3 --loglevel verbose
-
 RUN npm install --loglevel verbose
+
+RUN node-gyp rebuild
 
 CMD [ "npm", "run", "start" ]
