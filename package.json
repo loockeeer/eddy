@@ -8,7 +8,8 @@
     "build": "tsc",
     "start": "tsc && node prestart.js && node .",
     "watch": "tsc-watch --onSuccess \"node .\"",
-    "format": "prettier --write src"
+    "format": "prettier --write src",
+    "preinstall": "npm install better-sqlite3@'^7.0.0' --no-save --build-from-source --sqlite3=\"$(pwd)/amalgamation\""
   },
   "prettier": {
     "semi": false

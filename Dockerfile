@@ -4,14 +4,10 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN apk add python2 python3 make gcc g++ make
+RUN apk add python2 python3 make gcc g++ make wget
 
-RUN npm install -g node-gyp
+RUN wget "https://sqlite.com/2021/sqlite-amalgamation-3340100.zip" -O amalgation.tar.gz && unzip amalgation
 
-RUN npm install
-
-RUN npm run build
-
-RUN node prestart.js
+RUN npm install -g node-gyp && npm install && npm run build && node prestart.js
 
 CMD [ "node", "dist/index.js" ]
