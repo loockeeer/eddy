@@ -8,7 +8,7 @@ RUN apk add python2 python3 make gcc g++
 
 RUN npm install
 
-RUN tsc
+RUN npm run build
 
 RUN node prestart.js
 
