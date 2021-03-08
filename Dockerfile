@@ -1,13 +1,15 @@
-FROM node:15
+FROM node:15-alpine
 
 WORKDIR /usr/src/app
 
 COPY . .
 
-# Install deps and compile ts
-RUN npm install -g node-gyp && npm install && npm run build
+RUN apk add python2 python3 make gcc g++ make wget
 
-# (Re)build better-sqlite3
-RUN make -o /usr/src/app/node_modules/better-sqlite3/build/Makefile
+RUN wget "https://sqlite.com/2021/sqlite-amalgamation-3340100.zip" -O amalgation.tar.gz && unzip amalgation.tar.gz
+
+RUN npm install -g node-gyp && npm install
+
+RUN npm run build
 
 CMD [ "node", "prestart.js", "&&", "node", "dist/index.js" ]
