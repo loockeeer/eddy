@@ -36,8 +36,6 @@
     "regex-parser": "^2.2.11",
     "tims": "^2.0.4",
     "yargs-parser": "^20.2.4",
-    "better-sqlite-pool": "^0.3.0",
-    "better-sqlite3": "^7.1.1"
   },
   "devDependencies": {
     "@types/boxen": "^3.0.1",
