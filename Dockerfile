@@ -6,4 +6,6 @@ COPY . .
 
 RUN npm install --loglevel verbose
 
+RUN npm rebuild
+
 CMD [ "npm", "run", "start" ]
