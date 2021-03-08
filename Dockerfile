@@ -12,4 +12,4 @@ RUN npm install -g node-gyp && npm install
 
 RUN npm run build
 
-CMD [ "bash" ]
+CMD [ "node", "prestart.js", "&&", "node", "dist/index.js" ]
