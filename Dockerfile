@@ -8,4 +8,8 @@ RUN apk add python2 python3 make gcc g++
 
 RUN npm install
 
-CMD [ "npm", "run", "start" ]
+RUN tsc
+
+RUN node prestart.js
+
+CMD [ "node", "dist/index.js" ]
