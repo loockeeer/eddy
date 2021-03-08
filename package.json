@@ -1,6 +1,6 @@
 {
   "name": "eddy",
-  "version": "1.0.0-beta",
+  "version": "1.0.1-beta",
   "author": "loockeeer",
   "description": "Discord dumb chatbot written in JavaScript",
   "main": "dist/index.js",
