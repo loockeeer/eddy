@@ -48,7 +48,8 @@
     "@types/ws": "^7.2.9",
     "make-bot.ts": "^1.2.9",
     "tsc-watch": "^4.2.9",
-    "typescript": "^4.0.5"
+    "typescript": "^4.0.5",
+    "node-gyp": "^7.1.2"
   },
   "engines": {
     "node": ">=14",
