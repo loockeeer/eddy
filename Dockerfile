@@ -14,4 +14,4 @@ RUN make
 
 WORKDIR /usr/src/app
 
-CMD [ "node", "prestart.js", "&&", "node", "."]
+CMD [ "npm", "run", "start" ]
