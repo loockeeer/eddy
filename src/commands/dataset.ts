@@ -458,10 +458,7 @@ const command: app.Command = {
                 ["write", "use", "none"].includes(v.toLowerCase()),
               checkValueError:
                 "Permission must be a number and must be none, use or write",
-              castValue: v => {
-                console.log(v)
-                return v.toUpperCase()
-              },
+              castValue: v => v.toUpperCase(),
               default: ""
             },
           ],
