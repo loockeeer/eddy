@@ -418,57 +418,15 @@ const command: app.Command = {
         },
       ],
       async run(message) {
-        if (
-          message.positional.dataset.data.ownerKind ===
-          app.eddy.TargetKinds.GUILD
-        ) {
-          if (message?.guild?.id !== message.positional.dataset.ownerID) {
-            return message.channel.send(
-              app.messageEmbed(
-                `Dataset ${message.positional.dataset.name} does not belong to this guild`,
-                message.author,
-                "RED"
-              )
-            )
-          }
-          if (
-            !message?.member?.hasPermission("MANAGE_GUILD", {
-              checkAdmin: true,
-              checkOwner: true,
-            })
-          ) {
-            return message.channel.send(
-              new app.MessageEmbed()
-                .setColor("RED")
-                .setAuthor(
-                  `You need the \`MANAGE_GUILD\` permission to call this command.`,
-                  message.client.user?.displayAvatarURL({ dynamic: true })
-                )
-            )
-          } else {
-            message.positional.dataset.delete()
-            return message.channel.send(
-              app.messageEmbed(
-                `Dataset ${message.positional.dataset.name} has been deleted`,
-                message.author,
-                "GREEN"
-              )
-            )
-          }
-        } else if (
-          message.positional.dataset.data.ownerKind ===
-          app.eddy.TargetKinds.USER
-        ) {
-          if (message.author.id !== message.positional.data.ownerID) {
-            return message.channel.send(
-              app.messageEmbed(
-                `Dataset ${message.positional.dataset.name} does not belong to you`,
-                message.author,
-                "RED"
-              )
-            )
-          }
-        }
+        if(message.positional.dataset.checkOwner(message) !== undefined) return;
+        message.positional.dataset.delete()
+        return message.channel.send(
+          app.messageEmbed(
+            `Dataset ${message.positional.dataset.name} has been deleted`,
+            message.author,
+            "GREEN"
+          )
+        )
       },
     },
     {
@@ -510,47 +468,7 @@ const command: app.Command = {
           async run(message) {
             const dataset: app.eddy.Dataset = message.positional.dataset
             if (message.positional.permission) {
-              if (
-                message.positional.dataset.data.ownerKind ===
-                  app.eddy.TargetKinds.GUILD &&
-                message?.guild?.id !== message.positional.dataset.ownerID
-              ) {
-                return message.channel.send(
-                  app.messageEmbed(
-                    `Dataset ${message.positional.dataset.name} does not belong to this guild`,
-                    message.author,
-                    "RED"
-                  )
-                )
-              } else if (
-                message.positional.dataset.data.ownerKind ===
-                  app.eddy.TargetKinds.GUILD &&
-                !message?.member?.hasPermission("MANAGE_GUILD", {
-                  checkAdmin: true,
-                  checkOwner: true,
-                })
-              ) {
-                return message.channel.send(
-                  new app.MessageEmbed()
-                    .setColor("RED")
-                    .setAuthor(
-                      `You need the \`MANAGE_GUILD\` permission to call this command.`,
-                      message.client.user?.displayAvatarURL({ dynamic: true })
-                    )
-                )
-              } else if (
-                message.positional.dataset.data.ownerKind ===
-                  app.eddy.TargetKinds.USER &&
-                message.positional.dataset.ownerID !== message.author.id
-              ) {
-                return message.channel.send(
-                  app.messageEmbed(
-                    `Dataset ${message.positional.dataset.name} does not belong to you`,
-                    message.author,
-                    "RED"
-                  )
-                )
-              }
+              if(dataset.checkOwner(message) !== undefined) return;
               const oldGlobal = dataset.globalPermission
               dataset.globalPermission = message.positional.permission
               return message.channel.send(
@@ -724,6 +642,7 @@ const command: app.Command = {
               async run(message) {
                 const dataset: app.eddy.Dataset = message.positional.dataset
                 const target: app.Guild | app.User = message.positional.target
+                if(dataset.checkOwner(message) !== undefined) return;
                 const permission: app.eddy.Permissions =
                   message.positional.permission
                 const old = dataset.specificPermissions.find(
@@ -808,7 +727,7 @@ const command: app.Command = {
               async run(message) {
                 const dataset: app.eddy.Dataset = message.positional.dataset
                 const target: app.Guild | app.User = message.positional.target
-
+                if(dataset.checkOwner(message) !== undefined) return;
                 dataset.deleteSpecificPermission(target.id)
 
                 return message.channel.send(

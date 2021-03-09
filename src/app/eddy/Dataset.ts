@@ -2,7 +2,8 @@ import Discord from "discord.js"
 import fs from "fs/promises"
 import path from "path"
 import { datasets } from "../database"
-import {datasetsPath} from "../utils"
+import {datasetsPath, messageEmbed} from "../utils"
+import { CommandMessage } from "../handler"
 
 export enum Permissions {
   "NONE" = "NONE",
@@ -47,6 +48,54 @@ export class DatasetNotExistsError extends Error {
 
 export class Dataset {
   private readonly _name: string
+
+  static checkOwner(datasetName: string, message: CommandMessage) {
+    const dataset = Dataset.getDataset(datasetName)
+    if(!dataset) throw new DatasetNotExistsError(
+      `Dataset with name "${datasetName}" does not exists`
+    )
+    if (
+      message.positional.dataset.data.ownerKind ===
+      TargetKinds.GUILD &&
+      message?.guild?.id !== message.positional.dataset.ownerID
+    ) {
+      return message.channel.send(
+        messageEmbed(
+          `Dataset ${message.positional.dataset.name} does not belong to this guild`,
+          message.author,
+          "RED"
+        )
+      )
+    } else if (
+      message.positional.dataset.data.ownerKind ===
+      TargetKinds.GUILD &&
+      !message?.member?.hasPermission("MANAGE_GUILD", {
+        checkAdmin: true,
+        checkOwner: true,
+      })
+    ) {
+      return message.channel.send(
+        new Discord.MessageEmbed()
+          .setColor("RED")
+          .setAuthor(
+            `You need the \`MANAGE_GUILD\` permission to call this command.`,
+            message.client.user?.displayAvatarURL({ dynamic: true })
+          )
+      )
+    } else if (
+      message.positional.dataset.data.ownerKind ===
+      TargetKinds.USER &&
+      message.positional.dataset.ownerID !== message.author.id
+    ) {
+      return message.channel.send(
+        messageEmbed(
+          `Dataset ${message.positional.dataset.name} does not belong to you`,
+          message.author,
+          "RED"
+        )
+      )
+    }
+  }
 
   static async createDataset(
     name: string,
@@ -233,5 +282,9 @@ export class Dataset {
 
   delete() {
     return Dataset.deleteDataset(this._name)
+  }
+
+  checkOwner(message: CommandMessage) {
+    return Dataset.checkOwner(this._name, message)
   }
 }
