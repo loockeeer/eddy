@@ -17,7 +17,7 @@ const command: app.Command = {
       .setTimestamp()
 
     if(message.client.uptime) {
-      embed.addField('Uptime', app.dayjs(message.client.uptime).format("YYYY MM-DD HH:mm:ss"), true)
+      embed.addField('Uptime', app.dayjs(Date.now() - message.client.uptime).fromNow(), true)
     }
     return message.channel.send(embed)
   }
