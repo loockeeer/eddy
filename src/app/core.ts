@@ -5,6 +5,7 @@ import dayjs from "dayjs"
 import utc from "dayjs/plugin/utc"
 import timezone from "dayjs/plugin/timezone"
 import toObject from "dayjs/plugin/toObject"
+import relativeTime from "dayjs/plugin/relativeTime"
 
 /**
  * Resolve `T` value from `T | (() => T)`
@@ -94,6 +95,7 @@ export const CODE = {
 dayjs.extend(utc)
 dayjs.extend(timezone)
 dayjs.extend(toObject)
+dayjs.extend(relativeTime)
 dayjs.utc(1)
 
 if (process.env.TIMEZONE) dayjs.tz.setDefault(process.env.TIMEZONE)
