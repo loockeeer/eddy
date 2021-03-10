@@ -16,14 +16,14 @@ const listener: app.Listener<"message"> = {
         const autoTalk = app.eddy.getAutoTalk(message.guild)
         if (autoTalk) {
           const dataset = new app.eddy.Dataset(autoTalk.datasetName)
-          app.reply(app.eddy.generate(dataset, message.content, message), message)
+          app.reply(await app.eddy.generate(dataset, message.content, message), message)
         }
       }
 
       const link = app.eddy.getLink(message.channel)
       if (link) {
         const dataset = new app.eddy.Dataset(link)
-        app.reply(app.eddy.generate(dataset, message.content, message), message)
+        app.reply(await app.eddy.generate(dataset, message.content, message), message)
       }
 
       if (!message.guild) return
@@ -31,10 +31,11 @@ const listener: app.Listener<"message"> = {
       if (autoTalk) {
         if (Math.random() < autoTalk.probability) {
           const dataset = new app.eddy.Dataset(autoTalk.datasetName)
-          app.reply(app.eddy.generate(dataset, message.content, message), message)
+          app.reply(await app.eddy.generate(dataset, message.content, message), message)
         }
       }
-    } catch {
+    } catch(e){
+      if(e.message !== "Unauthorized") throw e
       app.reply("gneuh t'as pas la perm pour m'utiliser ducon", message)
     }
   }

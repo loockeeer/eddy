@@ -23,7 +23,6 @@ export function calculatePermissions(
     )
       userPermission = specific.permission
   }
-
   const permission = userPermission || guildPermission || globalPermission
   if (returnAll)
     return {

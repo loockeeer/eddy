@@ -2,8 +2,13 @@ import Discord from "discord.js"
 import fs from "fs/promises"
 import path from "path"
 import { datasets } from "../database"
-import {datasetsPath, messageEmbed} from "../utils"
+import { datasetsPath, messageEmbed, eddyCache } from "../utils"
 import { CommandMessage } from "../handler"
+import util from 'util'
+// @ts-ignore
+import Ector from "ector"
+// @ts-ignore
+import { FileConceptNetwork } from "file-concept-network"
 
 export enum Permissions {
   "NONE" = "NONE",
@@ -12,8 +17,8 @@ export enum Permissions {
 }
 
 export enum TargetKinds {
-  "USER"= "USER",
-  "GUILD"= "GUILD",
+  "USER" = "USER",
+  "GUILD" = "GUILD",
 }
 
 export interface DatasetPermission {
@@ -29,7 +34,6 @@ export interface DatasetInterface {
   createdAt: number
   ownerID: Discord.Snowflake
   ownerKind: TargetKinds
-  ngrams: number
 }
 
 export class DatasetExistsError extends Error {
@@ -51,12 +55,12 @@ export class Dataset {
 
   static checkOwner(datasetName: string, message: CommandMessage) {
     const dataset = Dataset.getDataset(datasetName)
-    if(!dataset) throw new DatasetNotExistsError(
-      `Dataset with name "${datasetName}" does not exists`
-    )
+    if (!dataset)
+      throw new DatasetNotExistsError(
+        `Dataset with name "${datasetName}" does not exists`
+      )
     if (
-      message.positional.dataset.data.ownerKind ===
-      TargetKinds.GUILD &&
+      message.positional.dataset.data.ownerKind === TargetKinds.GUILD &&
       message?.guild?.id !== message.positional.dataset.ownerID
     ) {
       return message.channel.send(
@@ -67,8 +71,7 @@ export class Dataset {
         )
       )
     } else if (
-      message.positional.dataset.data.ownerKind ===
-      TargetKinds.GUILD &&
+      message.positional.dataset.data.ownerKind === TargetKinds.GUILD &&
       !message?.member?.hasPermission("MANAGE_GUILD", {
         checkAdmin: true,
         checkOwner: true,
@@ -83,8 +86,7 @@ export class Dataset {
           )
       )
     } else if (
-      message.positional.dataset.data.ownerKind ===
-      TargetKinds.USER &&
+      message.positional.dataset.data.ownerKind === TargetKinds.USER &&
       message.positional.dataset.ownerID !== message.author.id
     ) {
       return message.channel.send(
@@ -121,7 +123,10 @@ export class Dataset {
       ngrams,
     }
     datasets.set(name, dataset)
-    await fs.writeFile(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`), "{}")
+    await fs.writeFile(
+      path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`),
+      "{}"
+    )
     return dataset
   }
 
@@ -134,7 +139,9 @@ export class Dataset {
   }
 
   static getDatasetsByOwnerID(ownerID: Discord.Snowflake): Dataset[] {
-    return datasets.filter((d) => d.ownerID === ownerID).map(d=>new Dataset(d.name))
+    return datasets
+      .filter((d) => d.ownerID === ownerID)
+      .map((d) => new Dataset(d.name))
   }
 
   static async deleteDataset(name: string): Promise<DatasetInterface> {
@@ -145,7 +152,9 @@ export class Dataset {
       )
 
     datasets.delete(name)
-    await fs.unlink(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`))
+    await fs.unlink(
+      path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`)
+    )
     return dataset
   }
 
@@ -223,6 +232,25 @@ export class Dataset {
     return toDelete
   }
 
+  static async retrieveEddy(name: string) {
+    const dataset = Dataset.getDataset(name)
+    if (!dataset)
+      throw new DatasetNotExistsError(
+        `Dataset with name "${name}" does not exists`
+      )
+    let cached = eddyCache.get(name)
+    if(!cached) {
+      cached = new Ector()
+      cached.injectConceptNetwork(FileConceptNetwork)
+      eddyCache.set(name, cached)
+      if ((await fs.readFile(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`))).toString() !== "{}") {
+        await util.promisify(cached.cn.load.bind(cached.cn))(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`))
+      }
+
+    }
+    return cached
+  }
+
   constructor(name: string) {
     this._name = name
   }
@@ -239,10 +267,6 @@ export class Dataset {
     return this._name
   }
 
-  get ngrams() {
-    return this.data.ngrams
-  }
-
   get ownerID() {
     return this.data.ownerID
   }
@@ -253,6 +277,10 @@ export class Dataset {
 
   get createdAt() {
     return this.data.createdAt
+  }
+
+  get filename() {
+    return `${this.name}-${this.createdAt}.json`
   }
 
   set globalPermission(newPermission: Permissions) {
@@ -286,5 +314,9 @@ export class Dataset {
 
   checkOwner(message: CommandMessage) {
     return Dataset.checkOwner(this._name, message)
+  }
+
+  retrieveEddy() {
+    return Dataset.retrieveEddy(this._name)
   }
 }

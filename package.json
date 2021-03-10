@@ -31,11 +31,14 @@
     "dotenv": "^8.2.0",
     "enmap": "^5.8.2",
     "figlet": "^1.5.0",
+    "markov-strings": "^3.0.1",
     "prettier": "^2.1.2",
     "readable-size": "^0.2.0",
     "regex-parser": "^2.2.11",
     "tims": "^2.0.4",
-    "yargs-parser": "^20.2.4"
+    "yargs-parser": "^20.2.4",
+    "ector": "^1.0.1",
+    "file-concept-network": "^0.1.2"
   },
   "devDependencies": {
     "@types/boxen": "^3.0.1",

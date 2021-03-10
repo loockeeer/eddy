@@ -3,11 +3,14 @@ import * as database from "./database"
 import { CommandMessage } from "./handler"
 import path from "path"
 import fs from "fs/promises"
+// @ts-ignore
+import Ector from "ector"
 
 export const footer = `Eddy Malou - Made by Loockeeer#8522`
 export const maxDataset = 2
 export const datasetsPath = path.join(__dirname, "../../data/datasets")
 export const enmapPath = path.join(__dirname, "../../data/enmap")
+export const eddyCache = new Discord.Collection<string, Ector>()
 
 export async function prefix(guild?: Discord.Guild): Promise<string> {
   let prefix = process.env.PREFIX as string

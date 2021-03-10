@@ -67,7 +67,6 @@ const command: app.Command = {
         )}`,
         true
       )
-      .addField("Ngrams", dataset.ngrams)
       .setColor("BLUE")
       .setTimestamp()
       .setFooter(app.footer)
