@@ -5,6 +5,7 @@ const listener: app.Listener<"message"> = {
   async run(message) {
     if(!app.isCommandMessage(message)) return
     if(message.author.bot) return
+    if(message.content.startsWith(app.ignoreChar)) return
 
     const prefix = await app.prefix(message.guild ?? undefined)
 
