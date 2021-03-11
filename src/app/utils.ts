@@ -164,11 +164,14 @@ export async function isReferencedAnswer(
   return referenceMessage?.author?.id === target
 }
 
-export function reply(content: string, message: Discord.Message) {
+export function reply(content: string, message: Discord.Message, mention = false) {
   // @ts-ignore
   return message.client.rest.api.channels[message.channel.id].messages.post({
     data: {
       content,
+      allowed_mentions: {
+        replied_user: mention
+      },
       message_reference: {
         guild_id: message?.guild?.id,
         channel_id: message.channel.id,
