@@ -36,7 +36,8 @@ const listener: app.Listener<"message"> = {
       }
     } catch(e){
       if(e.message !== "Unauthorized") throw e
-      app.reply("gneuh t'as pas la perm pour m'utiliser ducon", message)
+      await message.react('❌')
+
     }
   }
 }
