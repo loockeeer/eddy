@@ -294,16 +294,20 @@ const command: app.Command = {
             app.messageEmbed(`No dataset found :/`, message.author, "BLUE")
           )
         }
-        const formatted = totalDatasets.map(async (dataset) => {
-          return `Links: ${dataset.u} - ${dataset.dataset.name} | ${
+
+        const formatted = []
+
+        for(const dataset of totalDatasets) {
+          formatted.push(`Links: ${dataset.u} - ${dataset.dataset.name} | ${
             dataset.dataset.data.ownerKind === app.eddy.TargetKinds.USER
               ? (await message.client.users.fetch(dataset.dataset.ownerID)).tag
               : (await message.client.guilds.fetch(dataset.dataset.ownerID))
-                  .name
-          }`
-        })
+                .name
+          }`)
+        }
+
         new app.Paginator(
-          app.Paginator.divider(await Promise.all(formatted), 10).map(
+          app.Paginator.divider(formatted, 10).map(
             (page) => {
               return new app.MessageEmbed()
                 .setColor("BLUE")
@@ -549,7 +553,7 @@ const command: app.Command = {
                 )
               )
             }
-            const formatted = await Promise.all(
+            const sorted =
               specifics
                 .sort((a, b) => {
                   return a.targetKind === app.eddy.TargetKinds.GUILD &&
@@ -557,28 +561,28 @@ const command: app.Command = {
                     ? 1
                     : -1
                 })
-                .map(async (p) => {
-                  if (p.targetKind === app.eddy.TargetKinds.GUILD) {
-                    return {
-                      target: message.client.guilds.cache.get(p.target)?.name,
-                      permissions: `Use : ${app.checkMark(
-                        p.permission !== app.eddy.Permissions.NONE
-                      )} \n Write : ${app.checkMark(
-                        p.permission === app.eddy.Permissions.WRITE
-                      )}`,
-                    }
-                  } else {
-                    return {
-                      target: (await message.client.users.fetch(p.target)).tag,
-                      permissions: `Use : ${app.checkMark(
-                        p.permission !== app.eddy.Permissions.NONE
-                      )} \n Write : ${app.checkMark(
-                        p.permission === app.eddy.Permissions.WRITE
-                      )}`,
-                    }
-                  }
+                const formatted = []
+            for(const p of sorted) {
+              if (p.targetKind === app.eddy.TargetKinds.GUILD) {
+                formatted.push( {
+                  target: message.client.guilds.cache.get(p.target)?.name,
+                  permissions: `Use : ${app.checkMark(
+                    p.permission !== app.eddy.Permissions.NONE
+                  )} \n Write : ${app.checkMark(
+                    p.permission === app.eddy.Permissions.WRITE
+                  )}`,
                 })
-            )
+              } else {
+                formatted.push( {
+                  target: (await message.client.users.fetch(p.target)).tag,
+                  permissions: `Use : ${app.checkMark(
+                    p.permission !== app.eddy.Permissions.NONE
+                  )} \n Write : ${app.checkMark(
+                    p.permission === app.eddy.Permissions.WRITE
+                  )}`,
+                } )
+              }
+            }
             new app.Paginator(
               app.Paginator.divider(formatted, 10).map((page) => {
                 const embed = new app.MessageEmbed()
