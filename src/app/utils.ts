@@ -44,17 +44,24 @@ export async function channelCheckValue(
   if (value.match(/^<#(\d+)>$/)) {
     const ID = value.match(/^<#(\d+)>$/)?.[1]
     if (!ID) return false
-    const channel = message.guild.channels.cache.get(ID)
+    const channel = message.guild
+      ? message.guild.channels.cache.get(ID)
+      : message.channel
     return !!channel
   } else if (value.match(/\d+/)) {
     const ID = value.match(/\d+/)?.[0]
     if (!ID) return false
-    const channel = message.guild.channels.cache.get(ID)
+    const channel = message.guild
+      ? message.guild.channels.cache.get(ID)
+      : message.channel
     return !!channel
   } else {
-    const channel = message.guild.channels.cache
-      .filter((c) => c.isText())
-      .find((c) => (c && c.isText() ? c.name.includes(value) : false))
+    const channel = message.guild
+      ? message.guild.channels.cache
+          .filter((c) => c.isText())
+          .find((c) => (c && c.isText() ? c.name.includes(value) : false))
+      : message.channel
+
     return !!channel
   }
 }
@@ -63,15 +70,22 @@ export async function channelCastValue(value: string, message: CommandMessage) {
   if (value.match(/^<#(\d+)>$/)) {
     const ID = value.match(/^<#(\d+)>$/)?.[1]
     if (!ID) return false
-    return message?.guild?.channels.cache.get(ID)
+    return message.guild
+      ? message.guild.channels.cache.get(ID)
+      : message.channel
   } else if (value.match(/\d+/)) {
     const ID = value.match(/\d+/)?.[0]
+    console.log(ID)
     if (!ID) return false
-    return message?.guild?.channels.cache.get(ID)
+    return message.guild
+      ? message.guild.channels.cache.get(ID)
+      : message.channel
   } else {
-    return message?.guild?.channels.cache
-      .filter((c) => c.isText())
-      .find((c) => (c && c.isText() ? c.name.includes(value) : false))
+    return message.guild
+      ? message.guild.channels.cache
+          .filter((c) => c.isText())
+          .find((c) => (c && c.isText() ? c.name.includes(value) : false))
+      : message.channel
   }
 }
 
@@ -165,13 +179,17 @@ export async function isReferencedAnswer(
   return referenceMessage?.author?.id === target
 }
 
-export function reply(content: string, message: Discord.Message, mention = false) {
+export function reply(
+  content: string,
+  message: Discord.Message,
+  mention = false
+) {
   // @ts-ignore
   return message.client.rest.api.channels[message.channel.id].messages.post({
     data: {
       content,
       allowed_mentions: {
-        replied_user: mention
+        replied_user: mention,
       },
       message_reference: {
         guild_id: message?.guild?.id,

@@ -1,6 +1,5 @@
 import * as app from "../app"
 
-// @ts-ignore
 const command: app.Command = {
   name: "dataset",
   aliases: ["d", "ds"],

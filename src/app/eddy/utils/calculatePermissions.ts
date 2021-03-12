@@ -1,24 +1,24 @@
-import { Dataset, Permissions, TargetKinds } from "../Dataset"
+import * as app from "../../../app"
 import Discord from "discord.js"
 
 export function calculatePermissions(
-  dataset: Dataset,
+  dataset: app.eddy.Dataset,
   executor: Discord.Message,
   returnAll: boolean = false
-): Permissions | any {
-  let userPermission: Permissions | undefined = undefined
-  let guildPermission: Permissions | undefined = undefined
-  let globalPermission: Permissions = dataset.globalPermission
+): app.eddy.Permissions | any {
+  let userPermission: app.eddy.Permissions | undefined = undefined
+  let guildPermission: app.eddy.Permissions | undefined = undefined
+  let globalPermission: app.eddy.Permissions = dataset.globalPermission
 
   for (const specific of dataset.specificPermissions) {
     if (
-      specific.targetKind === TargetKinds.GUILD &&
+      specific.targetKind === app.eddy.TargetKinds.GUILD &&
       executor?.guild?.id === specific.target
     )
       guildPermission = specific.permission
 
     if (
-      specific.targetKind === TargetKinds.USER &&
+      specific.targetKind === app.eddy.TargetKinds.USER &&
       executor?.author?.id === specific.target
     )
       userPermission = specific.permission
