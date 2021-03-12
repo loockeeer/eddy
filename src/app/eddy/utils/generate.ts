@@ -17,9 +17,9 @@ async function generateText(
     util.promisify(eddy.cn.save.bind(eddy.cn))(path.join(datasetsPath, dataset.filename))
   }
   try {
-    return eddy.generateResponse().sentence
+    return eddy.generateResponse().sentence.replace(/eddy|(<@!?\d+>)/ig, executor.author)
   } catch {
-    return 'lol'
+    return "Une erreur est survenue durant mon processus de génération :/"
   }
 }
 
