@@ -5,6 +5,7 @@ const command: app.Command = {
   name: "dataset",
   aliases: ["d", "ds"],
   description: "Show information about a dataset",
+  botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
   positional: [
     {
       name: "dataset",
@@ -76,6 +77,7 @@ const command: app.Command = {
     {
       name: "link",
       aliases: ["li"],
+      botPermissions: ["SEND_MESSAGES", "MANAGE_MESSAGES", "ADD_REACTIONS", "EMBED_LINKS"],
       description: "Create a link between a channel and a dataset",
       positional: [
         {
@@ -252,6 +254,7 @@ const command: app.Command = {
     },
     {
       name: "unlink",
+      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       aliases: ["ul"],
       description: "Remove the link between a channel and a dataset",
       positional: [
@@ -282,10 +285,11 @@ const command: app.Command = {
     {
       name: "list",
       aliases: ["l"],
+      botPermissions: ["SEND_MESSAGES", "ADD_REACTIONS", "MANAGE_MESSAGES", "EMBED_LINKS"],
       description: "List the available datasets",
       async run(message) {
         const totalDatasets = app.eddy.Dataset.getAll()
-          .map((d) => ({ u: app.eddy.getLinksCount(d), dataset: d }))
+          .map((d) => ({ u: app.eddy.getLinks(d).array().length, dataset: d }))
           .sort((a, b) => {
             return b.u - a.u
           })
@@ -326,6 +330,7 @@ const command: app.Command = {
     {
       name: "create",
       aliases: ["new", "make", "add"],
+      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       description: "Create a new dataset",
       positional: [
         {
@@ -408,8 +413,9 @@ const command: app.Command = {
       },
     },
     {
-      name: "delete",
-      aliases: ["remove", "rm", "dl"],
+      name: "remove",
+      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+      aliases: ["delete", "rm", "dl"],
       positional: [
         {
           name: "dataset",
@@ -434,6 +440,7 @@ const command: app.Command = {
     },
     {
       name: "permission",
+      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       description: "Sub command for dataset permission settings",
       async run(message) {
         return app.sendCommandDetails(
@@ -445,6 +452,7 @@ const command: app.Command = {
       subs: [
         {
           name: "global",
+          botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
           positional: [
             {
               name: "dataset",
@@ -532,6 +540,7 @@ const command: app.Command = {
         },
         {
           name: "specific",
+          botPermissions: ["SEND_MESSAGES", "ADD_REACTIONS", "MANAGE_MESSAGES", "EMBED_LINKS"],
           positional: [
             {
               name: "dataset",
@@ -603,6 +612,8 @@ const command: app.Command = {
           subs: [
             {
               name: "set",
+              description: "Set dataset specific permission",
+              botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
               positional: [
                 {
                   name: "dataset",
@@ -697,7 +708,10 @@ const command: app.Command = {
               },
             },
             {
-              name: "delete",
+              name: "remove",
+              aliases: ["delete", "rm", "dl"],
+              description: "Remove dataset specific permission",
+              botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
               positional: [
                 {
                   name: "dataset",

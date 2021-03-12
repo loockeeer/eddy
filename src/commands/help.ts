@@ -3,7 +3,7 @@ import * as app from "../app"
 const command: app.Command = {
   name: "help",
   aliases: ["h", "usage"],
-  botPermissions: ["SEND_MESSAGES"],
+  botPermissions: ["SEND_MESSAGES", "ADD_REACTIONS", "MANAGE_MESSAGES", "EMBED_LINKS"],
   description: "Help menu",
   longDescription: "Display all commands of bot or detail a target command.",
   positional: [
