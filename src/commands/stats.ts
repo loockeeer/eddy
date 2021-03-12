@@ -16,6 +16,7 @@ const command: app.Command = {
       .addField('Dataset Count', app.datasets.count, true)
       .addField('Datasets Size', readableSize(await app.getDirectorySize(app.datasetsPath)), true)
       .addField('Guild Count', message.client.guilds.cache.size, true)
+      .addField('RAM Usage', readableSize(process.memoryUsage().heapUsed), true)
       .setFooter(app.footer)
       .setColor('BLUE')
       .setTimestamp()
