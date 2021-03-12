@@ -5,6 +5,7 @@ import { datasets } from "../database"
 import { datasetsPath, messageEmbed, eddyCache } from "../utils"
 import { CommandMessage } from "../handler"
 import util from 'util'
+import {unlinkDatasetAll} from "./link"
 // @ts-ignore
 import Ector from "ector"
 // @ts-ignore
@@ -309,6 +310,7 @@ export class Dataset {
   }
 
   delete() {
+    unlinkDatasetAll(this)
     return Dataset.deleteDataset(this._name)
   }
 
