@@ -156,6 +156,7 @@ export class Dataset {
     await fs.unlink(
       path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`)
     )
+    eddyCache.delete(name)
     return dataset
   }
 
