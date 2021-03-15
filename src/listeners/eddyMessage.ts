@@ -21,14 +21,14 @@ const listener: app.Listener<"message"> = {
         const autoTalk = app.eddy.getAutoTalk(message.guild)
         if (autoTalk) {
           const dataset = new app.eddy.Dataset(autoTalk.datasetName)
-          app.reply(await app.eddy.generate(dataset, message.content, message), message)
+          return app.reply(await app.eddy.generate(dataset, message.content, message), message)
         }
       }
 
       const link = app.eddy.getLink(message.channel)
       if (link) {
         const dataset = new app.eddy.Dataset(link)
-        app.reply(await app.eddy.generate(dataset, message.content, message), message)
+        return app.reply(await app.eddy.generate(dataset, message.content, message), message)
       }
 
       if (!message.guild) return
@@ -36,7 +36,7 @@ const listener: app.Listener<"message"> = {
       if (autoTalk) {
         if (Math.random() < autoTalk.probability) {
           const dataset = new app.eddy.Dataset(autoTalk.datasetName)
-          app.reply(await app.eddy.generate(dataset, message.content, message), message)
+          return app.reply(await app.eddy.generate(dataset, message.content, message), message)
         }
       }
     } catch(e){
@@ -45,7 +45,7 @@ const listener: app.Listener<"message"> = {
         checkAdmin: true,
         checkOwner: true,
       })) return
-      await message.react('❌')
+      return await message.react('❌')
 
     }
   }
