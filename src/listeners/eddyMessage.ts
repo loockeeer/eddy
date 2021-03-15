@@ -10,7 +10,11 @@ const listener: app.Listener<"message"> = {
     const prefix = await app.prefix(message.guild ?? undefined)
 
     if (message.content.startsWith(prefix)) return
-
+    if(!message.client.user) return
+    if(message.guild && !message.guild.me?.hasPermission("SEND_MESSAGES", {
+      checkAdmin: true,
+      checkOwner: true,
+    })) return
     try {
       if (!message.client.user) return
       if (await app.isReferencedAnswer(message, message.client.user.id) && message.guild) {
@@ -37,6 +41,10 @@ const listener: app.Listener<"message"> = {
       }
     } catch(e){
       if(e.message !== "Unauthorized") throw e
+      if(message.guild && !message.guild.me?.hasPermission("ADD_REACTIONS", {
+        checkAdmin: true,
+        checkOwner: true,
+      })) return
       await message.react('❌')
 
     }

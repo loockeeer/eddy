@@ -123,7 +123,7 @@ const command: app.Command = {
         },
       ],
       async run(message) {
-        const dataset = message.positional.dataset
+        const dataset = message.positional.dataset  
         if (message.args.list) {
           let links
           if (!message.guild) {
