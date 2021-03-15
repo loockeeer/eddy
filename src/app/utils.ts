@@ -12,6 +12,7 @@ export const datasetsPath = path.join(__dirname, "../../data/datasets")
 export const enmapPath = path.join(__dirname, "../../data/enmap")
 export const eddyCache = new Discord.Collection<string, Ector>()
 export const ignoreChar = "\\"
+export const eddyCooldown = 1000
 
 export async function prefix(guild?: Discord.Guild): Promise<string> {
   let prefix = process.env.PREFIX as string

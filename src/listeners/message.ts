@@ -23,6 +23,7 @@ const listener: app.Listener<"message"> = {
 
     if (!cmd) return null
 
+
     // check sub commands
     {
       let cursor = 0
