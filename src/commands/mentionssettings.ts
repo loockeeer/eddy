@@ -2,6 +2,8 @@ import * as app from "../app"
 
 const command: app.Command = {
   name: "mentionssettings",
+  description: "Set the mention settings for this guild",
+  aliases: ["ms", "mentions", "m"],
   botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
   async run(message) {
     if (!message.guild)
