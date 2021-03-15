@@ -1,32 +1,7 @@
 import * as app from "../app"
 
 function checkCooldown(message: app.Message) {
-  // check cooldown
-  const coolDown = app.cache.ensure("CD-eddy", 0)
-  if (Date.now() > coolDown + app.eddyCooldown) {
-    app.cache.set("CD-eddy", Date.now())
-    return false
-  } else {
-    if (
-      message.guild &&
-      !message.guild.me?.hasPermission("EMBED_LINKS", {
-        checkAdmin: true,
-        checkOwner: true,
-      })
-    )
-      return true
-
-    return message.channel.send(
-      new app.MessageEmbed()
-        .setColor("RED")
-        .setAuthor(
-          `Please wait ${Math.ceil(
-            (coolDown + app.eddyCooldown - Date.now()) / 1000
-          )} seconds...`,
-          message.client.user?.displayAvatarURL()
-        )
-    )
-  }
+  return false
 }
 
 const listener: app.Listener<"message"> = {
