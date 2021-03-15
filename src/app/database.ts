@@ -26,6 +26,12 @@ export const autoTalk = new Enmap<Discord.Snowflake, AutoTalk>({
   dataDir: path.join(enmapPath, "autoTalk")
 })
 
+export const guildMentions = new Enmap<Discord.Snowflake, Discord.MessageMentionTypes[]>({
+  name: "guildMentions",
+  dataDir: path.join(enmapPath, "guildMentions")
+})
+
+
 export interface AutoTalk {
   datasetName: string
   probability: number

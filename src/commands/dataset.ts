@@ -117,13 +117,11 @@ const command: app.Command = {
           description:
             "Whether or not you want to list the links created on this guild",
           castValue: "boolean",
-          checkValue: /true|false/,
-          checkValueError: "List must be a boolean (false/true)",
           default: "false",
         },
       ],
       async run(message) {
-        const dataset = message.positional.dataset  
+        const dataset = message.positional.dataset
         if (message.args.list) {
           let links
           if (!message.guild) {

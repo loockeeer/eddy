@@ -23,7 +23,16 @@ const listener: app.Listener<"message"> = {
       })
     )
       return
-
+    const options: {} = message.guild ? {
+      allowed_mentions: {
+        parse: app.guildMentions.ensure(message.guild.id, []),
+        replied_user: true
+      }
+    } : {
+      allowed_mentions: {
+        replied_user: true
+      }
+    }
     try {
       if (!message.client.user) return
       if (
@@ -36,7 +45,8 @@ const listener: app.Listener<"message"> = {
           const dataset = new app.eddy.Dataset(autoTalk.datasetName)
           return app.reply(
             await app.eddy.generate(dataset, message.content, message),
-            message
+            message,
+            options
           )
         }
       }
@@ -47,7 +57,8 @@ const listener: app.Listener<"message"> = {
         const dataset = new app.eddy.Dataset(link)
         return app.reply(
           await app.eddy.generate(dataset, message.content, message),
-          message
+          message,
+          options
         )
       }
 
@@ -59,7 +70,8 @@ const listener: app.Listener<"message"> = {
           const dataset = new app.eddy.Dataset(autoTalk.datasetName)
           return app.reply(
             await app.eddy.generate(dataset, message.content, message),
-            message
+            message,
+            options
           )
         }
       }
