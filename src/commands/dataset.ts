@@ -31,8 +31,8 @@ const command: app.Command = {
       .addField(
         "Owner",
         dataset.data.ownerKind === app.eddy.TargetKinds.USER
-          ? (await message.client.users.fetch(dataset.ownerID)).tag
-          : (await message.client.guilds.fetch(dataset.ownerID)).name,
+          ? (await message.client.users.fetch(dataset.ownerID)).catch(err=>({})).tag
+          : (await message.client.guilds.fetch(dataset.ownerID)).catch(err=>({})).name,
         true
       )
       .addField(
@@ -298,8 +298,8 @@ const command: app.Command = {
         const formatted = totalDatasets.map(async (dataset) => {
           return `Links: ${dataset.u} - ${dataset.dataset.name} | ${
             dataset.dataset.data.ownerKind === app.eddy.TargetKinds.USER
-              ? (await message.client.users.fetch(dataset.dataset.ownerID)).tag
-              : (await message.client.guilds.fetch(dataset.dataset.ownerID))
+              ? (await message.client.users.fetch(dataset.dataset.ownerID)).catch(err=>({})).tag
+              : (await message.client.guilds.fetch(dataset.dataset.ownerID)).catch(err=>({}))
                   .name
           }`
         })
@@ -655,7 +655,7 @@ const command: app.Command = {
                     }
                   } else {
                     return {
-                      target: (await message.client.users.fetch(p.target)).tag,
+                      target: (await message.client.users.fetch(p.target)).catch(err=>({})).tag,
                       permissions: `Use : ${app.checkMark(
                         p.permission !== app.eddy.Permissions.NONE
                       )} \n Write : ${app.checkMark(
