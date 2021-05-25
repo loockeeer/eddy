@@ -1,7 +1,7 @@
 import { Dataset } from "../Dataset"
 import { getLinks } from "../link"
 import { getAutotalkList } from "../autoTalk"
-import Discord from "discord.js"
+import Discord, { Collection, Message, Snowflake } from "discord.js"
 import { Fetcher } from "discord-fetch-messages"
 import { FetchQueue } from "../FetchQueue"
 import { generate } from "./generate"
@@ -28,9 +28,9 @@ export async function fetchDataset(client: Discord.Client, dataset: Dataset) {
       Number((i++ / channels.length).toFixed(2))
     )
   })
-  fetcher.on("fetch", (count, messages) => {
-    for (const message of messages) {
-      generate(dataset, message.content, message.author)
+  fetcher.on("fetch", (count: number, messages: Collection<Snowflake, Message>) => {
+    for (const message of messages.array()) {
+      generate(dataset, message.content, message)
         .catch(() => {})
         .then(() => {})
     }
