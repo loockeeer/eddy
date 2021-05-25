@@ -28,7 +28,7 @@ export async function fetchDataset(client: Discord.Client, dataset: Dataset) {
       Number((i++ / channels.length).toFixed(2))
     )
   })
-  fetcher.on("fetch", (messages) => {
+  fetcher.on("fetch", (count, messages) => {
     for (const message of messages) {
       generate(dataset, message.content, message.author)
         .catch(() => {})
