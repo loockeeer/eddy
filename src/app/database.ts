@@ -31,6 +31,15 @@ export const guildMentions = new Enmap<Discord.Snowflake, Discord.MessageMention
   dataDir: path.join(enmapPath, "guildMentions")
 })
 
+export const fetchQueue = new Enmap<string, FetchEntry>({
+  name: "fetchQueue",
+  dataDir: path.join(enmapPath, "fetchQueue")
+})
+
+export interface FetchEntry {
+  time: number
+  status: number
+}
 
 export interface AutoTalk {
   datasetName: string

@@ -333,8 +333,8 @@ const command: app.Command = {
         {
           name: "name",
           description: "The name of the new dataset",
-          checkValue: (value) => !app.eddy.Dataset.exists(value) && !/\W/g.test(value),
-          checkValueError: "A dataset already exists with name {} or it match this regex : /\\W/g",
+          checkValue: (value) => !app.eddy.Dataset.exists(value) && /^[\w|\s]{1,24}$/ig.test(value),
+          checkValueError: "A dataset already exists with name {} or it does not match this regex : `/^[\\w|\\s]{1,24}$/ig`",
         },
       ],
       args: [
@@ -358,6 +358,22 @@ const command: app.Command = {
         },
       ],
       async run(message) {
+        function loop (commands: app.Command<app.CommandMessage>[]): string[] {
+          return commands.map(command => {
+            const names = command.aliases ? [...command.aliases, command.name] : [command.name]
+            return command.subs ? [...names, ...loop(command.subs)] : names
+          }).flat()
+        }
+        const commands = command.subs ? loop(command.subs) : []
+        if(commands.includes(message.positional.name)) {
+          return message.channel.send(
+            app.messageEmbed(
+              "This dataset name is already a sub-command !",
+              message.author,
+              "RED"
+            )
+          )
+        }
         if (
           app.eddy.Dataset.getDatasetsByOwnerID(
             message.args.user || !message?.guild
@@ -756,6 +772,46 @@ const command: app.Command = {
         },
       ],
     },
+    {
+      name: "fetch",
+      aliases: ["f"],
+      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+      positional: [
+        {
+          name: "dataset",
+          description: "The dataset you want to choose",
+          checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
+          checkValueError: "There is not any dataset with that name : {}",
+          castValue: (datasetName) => new app.eddy.Dataset(datasetName),
+          default: "",
+        }
+      ],
+      async run(message) {
+
+          if (message.positional.dataset.checkOwner(message) !== undefined) return;
+
+          if (app.eddy.FetchQueue.exists(message.positional.dataset.name)) {
+              return message.channel.send(
+                new app.MessageEmbed()
+                  .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
+                  .addField('Position in the queue', app.eddy.FetchQueue.index(message.positional.dataset.name), true)
+                  .addField('Fetch status', message.positional.dataset.getFetchStatus() ? message.positional.dataset.getFetchStatus() + "%" : "Waiting", true)
+                  .setFooter(app.footer)
+                  .setColor('BLUE')
+                  .setTimestamp()
+              )
+        } else {
+            app.eddy.FetchQueue.add(message.positional.dataset.name)
+            return message.channel.send(
+              app.messageEmbed(
+                `Dataset ${message.positional.dataset.name} has been added to the fetch queue !`,
+                message.author,
+                "GREEN"
+              )
+            )
+          }
+      }
+    }
   ],
 }
 

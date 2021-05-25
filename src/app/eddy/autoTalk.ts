@@ -21,3 +21,6 @@ export function removeAutoTalk(guild: Discord.Guild) {
 export function getAutoTalk(guild: Discord.Guild) {
   return autoTalk.get(guild.id) ?? null
 }
+export function getAutotalkList(dataset: Dataset) {
+  return autoTalk.filter(autoT => autoT.datasetName === dataset.name)
+}

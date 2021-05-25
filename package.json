@@ -27,18 +27,19 @@
     "chalk": "^4.1.0",
     "dayjs": "^1.10.4",
     "discord-eval.ts": "^1.0.14",
+    "discord-fetch-messages": "^2.1.0",
     "discord.js": "^12.4.1",
     "dotenv": "^8.2.0",
+    "ector": "^1.0.1",
     "enmap": "^5.8.2",
     "figlet": "^1.5.0",
+    "file-concept-network": "^0.1.2",
     "markov-strings": "^3.0.1",
     "prettier": "^2.1.2",
     "readable-size": "^0.2.0",
     "regex-parser": "^2.2.11",
     "tims": "^2.0.4",
-    "yargs-parser": "^20.2.4",
-    "ector": "^1.0.1",
-    "file-concept-network": "^0.1.2"
+    "yargs-parser": "^20.2.4"
   },
   "devDependencies": {
     "@types/boxen": "^3.0.1",

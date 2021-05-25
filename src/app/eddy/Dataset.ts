@@ -10,6 +10,7 @@ import {unlinkDatasetAll} from "./link"
 import Ector from "ector"
 // @ts-ignore
 import { FileConceptNetwork } from "file-concept-network"
+import { FetchQueue } from "./FetchQueue"
 
 export enum Permissions {
   "NONE" = "NONE",
@@ -133,6 +134,10 @@ export class Dataset {
 
   static getAll() {
     return datasets.array().map((d) => new Dataset(d.name))
+  }
+
+  static fetchStatus(name: string) {
+    return FetchQueue.index(name) === 0
   }
 
   static exists(name: string): boolean {
@@ -313,6 +318,10 @@ export class Dataset {
   delete() {
     unlinkDatasetAll(this)
     return Dataset.deleteDataset(this._name)
+  }
+
+  getFetchStatus() {
+    return Dataset.fetchStatus(this._name)
   }
 
   checkOwner(message: CommandMessage) {
