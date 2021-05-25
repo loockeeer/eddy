@@ -28,7 +28,7 @@ export async function fetchDataset(client: Discord.Client, dataset: Dataset) {
       Number((i++ / channels.length).toFixed(2))
     )
   })
-  fetcher.on("fetch", (count: number, messages: Collection<Snowflake, Message>) => {
+  fetcher.on("fetch", ([_, messages]) => {
     for (const message of messages.array()) {
       generate(dataset, message.content, message)
         .catch(() => {})
