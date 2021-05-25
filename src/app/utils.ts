@@ -7,7 +7,7 @@ import fs from "fs/promises"
 import Ector from "ector"
 
 export const footer = `Eddy Malou - Made by Loockeeer#8522`
-export const supportGuildID = ""
+export const supportGuildID = "725356760793088132"
 export const maxDataset = 2
 export const datasetsPath = path.join(__dirname, "../../data/datasets")
 export const enmapPath = path.join(__dirname, "../../data/enmap")
@@ -27,7 +27,7 @@ export async function getSupportInvite(client: Discord.Client): Promise<Discord.
   if(!guild.systemChannel) throw "Support guild system channel does not exists !"
   const invite = (await guild.fetchInvites()).find(invite=>invite.inviter?.id === client.user?.id)
   if(!invite) {
-    return await guild.systemChannel.createInvite({temporary: false, unique: false, reason: "Eddy support invite"})
+    return await guild.systemChannel.createInvite({maxAge: 0, unique: false, reason: "Eddy support invite"})
   } else {
     if(invite.channel?.id !== guild.systemChannel.id) {
       await invite.delete("Invite is not in the good channel !")
