@@ -189,7 +189,7 @@ export function reply(
   return message.client.rest.api.channels[message.channel.id].messages.post({
     data: {
       allowed_mentions: {
-        replied_user: true
+        replied_user: true,
       },
       ...options,
       content,

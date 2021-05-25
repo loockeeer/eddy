@@ -23,7 +23,6 @@ const listener: app.Listener<"message"> = {
 
     if (!cmd) return null
 
-
     // check sub commands
     {
       let cursor = 0
@@ -231,7 +230,6 @@ const listener: app.Listener<"message"> = {
         }
 
         if (positional.castValue) {
-
           const casted = await app.castValue(
             positional,
             "positional",

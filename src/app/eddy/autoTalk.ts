@@ -1,15 +1,19 @@
 import Discord from "discord.js"
-import {Dataset} from "./Dataset"
-import {autoTalk, links} from "../database";
+import { Dataset } from "./Dataset"
+import { autoTalk, links } from "../database"
 
-export function setAutoTalk(guild: Discord.Guild, dataset: Dataset, probability: number) {
+export function setAutoTalk(
+  guild: Discord.Guild,
+  dataset: Dataset,
+  probability: number
+) {
   autoTalk.set(guild.id, {
     datasetName: dataset.name,
-    probability
+    probability,
   })
   return {
     datasetName: dataset.name,
-    probability
+    probability,
   }
 }
 
@@ -22,5 +26,5 @@ export function getAutoTalk(guild: Discord.Guild) {
   return autoTalk.get(guild.id) ?? null
 }
 export function getAutotalkList(dataset: Dataset) {
-  return autoTalk.filter(autoT => autoT.datasetName === dataset.name)
+  return autoTalk.filter((autoT) => autoT.datasetName === dataset.name)
 }

@@ -2,7 +2,7 @@ import { Dataset, Permissions, TargetKinds } from "../Dataset"
 import Discord from "discord.js"
 import { calculatePermissions } from "./calculatePermissions"
 import { datasetsPath } from "../../utils"
-import util from 'util'
+import util from "util"
 import path from "path"
 
 async function generateText(
@@ -14,10 +14,14 @@ async function generateText(
   const eddy = await dataset.retrieveEddy()
   if (write) {
     eddy.addEntry(content)
-    util.promisify(eddy.cn.save.bind(eddy.cn))(path.join(datasetsPath, dataset.filename))
+    util.promisify(eddy.cn.save.bind(eddy.cn))(
+      path.join(datasetsPath, dataset.filename)
+    )
   }
   try {
-    return eddy.generateResponse().sentence.replace(/eddy|(<@!?\d+>)/ig, executor.author)
+    return eddy
+      .generateResponse()
+      .sentence.replace(/eddy|(<@!?\d+>)/gi, executor.author)
   } catch {
     return "Une erreur est survenue durant mon processus de génération :/"
   }

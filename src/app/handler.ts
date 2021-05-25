@@ -127,7 +127,6 @@ export async function checkValue<Message extends CommandMessage>(
       ? !(await subject.checkValue(value, message))
       : !subject.checkValue.test(value)
   ) {
-
     await message.channel.send(
       new app.MessageEmbed()
         .setColor("RED")

@@ -4,8 +4,8 @@ import path from "path"
 import { datasets } from "../database"
 import { datasetsPath, messageEmbed, eddyCache } from "../utils"
 import { CommandMessage } from "../handler"
-import util from 'util'
-import {unlinkDatasetAll} from "./link"
+import util from "util"
+import { unlinkDatasetAll } from "./link"
 // @ts-ignore
 import Ector from "ector"
 // @ts-ignore
@@ -246,14 +246,21 @@ export class Dataset {
         `Dataset with name "${name}" does not exists`
       )
     let cached = eddyCache.get(name)
-    if(!cached) {
+    if (!cached) {
       cached = new Ector()
       cached.injectConceptNetwork(FileConceptNetwork)
       eddyCache.set(name, cached)
-      if ((await fs.readFile(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`))).toString() !== "{}") {
-        await util.promisify(cached.cn.load.bind(cached.cn))(path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`))
+      if (
+        (
+          await fs.readFile(
+            path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`)
+          )
+        ).toString() !== "{}"
+      ) {
+        await util.promisify(cached.cn.load.bind(cached.cn))(
+          path.join(datasetsPath, `${dataset.name}-${dataset.createdAt}.json`)
+        )
       }
-
     }
     return cached
   }

@@ -14,10 +14,10 @@ const command: app.Command = {
       .setAuthor(message.author.tag, message.author.displayAvatarURL())
       .setDescription("Allowed mentions for this guild")
       .addField(
-      "Everyone",
-      app.checkMark(allowed.indexOf("everyone") !== -1),
-      true
-    )
+        "Everyone",
+        app.checkMark(allowed.indexOf("everyone") !== -1),
+        true
+      )
       .addField("Users", app.checkMark(allowed.indexOf("users") !== -1), true)
       .addField("Roles", app.checkMark(allowed.indexOf("roles") !== -1), true)
       .setFooter(app.footer)
@@ -74,11 +74,15 @@ const command: app.Command = {
             `,
             true
           )
-          .addField("New", `
+          .addField(
+            "New",
+            `
             Everyone : ${app.checkMark(allowed.indexOf("everyone") !== -1)}
             Users : ${app.checkMark(allowed.indexOf("users") !== -1)}
             Roles : ${app.checkMark(allowed.indexOf("roles") !== -1)}
-            `, true)
+            `,
+            true
+          )
           .setFooter(app.footer)
           .setColor("BLUE")
           .setTimestamp()

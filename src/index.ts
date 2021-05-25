@@ -14,7 +14,7 @@ for (const key of ["TOKEN", "PREFIX", "OWNER"]) {
 }
 
 const client = new Discord.Client({
-  disableMentions: "all"
+  disableMentions: "all",
 })
 
 client.login(process.env.TOKEN).catch(() => {

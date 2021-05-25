@@ -76,7 +76,13 @@ const command: app.Command = {
     {
       name: "link",
       aliases: ["li"],
-      botPermissions: ["SEND_MESSAGES", "MANAGE_MESSAGES", "ADD_REACTIONS", "EMBED_LINKS"],
+      botPermissions: [
+        "SEND_MESSAGES",
+        "MANAGE_MESSAGES",
+        "ADD_REACTIONS",
+        "EMBED_LINKS",
+      ],
+      userPermissions: ["MANAGE_GUILD"],
       description: "Create a link between a channel and a dataset",
       positional: [
         {
@@ -252,6 +258,7 @@ const command: app.Command = {
     {
       name: "unlink",
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+      userPermissions: ["MANAGE_GUILD"],
       aliases: ["ul"],
       description: "Remove the link between a channel and a dataset",
       positional: [
@@ -282,7 +289,12 @@ const command: app.Command = {
     {
       name: "list",
       aliases: ["l"],
-      botPermissions: ["SEND_MESSAGES", "ADD_REACTIONS", "MANAGE_MESSAGES", "EMBED_LINKS"],
+      botPermissions: [
+        "SEND_MESSAGES",
+        "ADD_REACTIONS",
+        "MANAGE_MESSAGES",
+        "EMBED_LINKS",
+      ],
       description: "List the available datasets",
       async run(message) {
         const totalDatasets = app.eddy.Dataset.getAll()
@@ -298,27 +310,34 @@ const command: app.Command = {
 
         const formatted = []
 
-        for(const dataset of totalDatasets) {
-          formatted.push(`Links: ${dataset.u} - ${dataset.dataset.name} | ${
-            dataset.dataset.data.ownerKind === app.eddy.TargetKinds.USER
-              ? (await message.client.users.fetch(dataset.dataset.ownerID)).tag
-              : (await message.client.guilds.fetch(dataset.dataset.ownerID))
-                .name
-          }`)
+        for (const dataset of totalDatasets) {
+          formatted.push(
+            `Links: ${dataset.u} - ${dataset.dataset.name} | ${
+              dataset.dataset.data.ownerKind === app.eddy.TargetKinds.USER
+                ? (
+                    await message.client.users
+                      .fetch(dataset.dataset.ownerID)
+                      .catch((err) => undefined)
+                  )?.tag
+                : (
+                    await message.client.guilds
+                      .fetch(dataset.dataset.ownerID)
+                      .catch((err) => undefined)
+                  )?.name
+            }`
+          )
         }
 
         new app.Paginator(
-          app.Paginator.divider(formatted, 10).map(
-            (page) => {
-              return new app.MessageEmbed()
-                .setColor("BLUE")
-                .setAuthor(
-                  "Datasets list",
-                  message.client.user?.displayAvatarURL({ dynamic: true })
-                )
-                .setDescription(page.join("\n"))
-            }
-          ),
+          app.Paginator.divider(formatted, 10).map((page) => {
+            return new app.MessageEmbed()
+              .setColor("BLUE")
+              .setAuthor(
+                "Datasets list",
+                message.client.user?.displayAvatarURL({ dynamic: true })
+              )
+              .setDescription(page.join("\n"))
+          }),
           message.channel,
           (reaction, user) => user.id === message.author.id
         )
@@ -328,13 +347,16 @@ const command: app.Command = {
       name: "create",
       aliases: ["new", "make", "add"],
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
+      userPermissions: ["MANAGE_GUILD"],
       description: "Create a new dataset",
       positional: [
         {
           name: "name",
           description: "The name of the new dataset",
-          checkValue: (value) => !app.eddy.Dataset.exists(value) && /^[\w|\s]{1,24}$/ig.test(value),
-          checkValueError: "A dataset already exists with name {} or it does not match this regex : `/^[\\w|\\s]{1,24}$/ig`",
+          checkValue: (value) =>
+            !app.eddy.Dataset.exists(value) && /^[\w|\s]{1,24}$/gi.test(value),
+          checkValueError:
+            "A dataset already exists with name {} or it does not match this regex : `/^[\\w|\\s]{1,24}$/ig`",
         },
       ],
       args: [
@@ -358,14 +380,18 @@ const command: app.Command = {
         },
       ],
       async run(message) {
-        function loop (commands: app.Command<app.CommandMessage>[]): string[] {
-          return commands.map(command => {
-            const names = command.aliases ? [...command.aliases, command.name] : [command.name]
-            return command.subs ? [...names, ...loop(command.subs)] : names
-          }).flat()
+        function loop(commands: app.Command<app.CommandMessage>[]): string[] {
+          return commands
+            .map((command) => {
+              const names = command.aliases
+                ? [...command.aliases, command.name]
+                : [command.name]
+              return command.subs ? [...names, ...loop(command.subs)] : names
+            })
+            .flat()
         }
         const commands = command.subs ? loop(command.subs) : []
-        if(commands.includes(message.positional.name)) {
+        if (commands.includes(message.positional.name)) {
           return message.channel.send(
             app.messageEmbed(
               "This dataset name is already a sub-command !",
@@ -440,7 +466,7 @@ const command: app.Command = {
         },
       ],
       async run(message) {
-        if(message.positional.dataset.checkOwner(message) !== undefined) return;
+        if (message.positional.dataset.checkOwner(message) !== undefined) return
         message.positional.dataset.delete()
         return message.channel.send(
           app.messageEmbed(
@@ -482,14 +508,14 @@ const command: app.Command = {
                 ["write", "use", "none"].includes(v.toLowerCase()),
               checkValueError:
                 "Permission must be a number and must be none, use or write",
-              castValue: v => v.toUpperCase(),
-              default: ""
+              castValue: (v) => v.toUpperCase(),
+              default: "",
             },
           ],
           async run(message) {
             const dataset: app.eddy.Dataset = message.positional.dataset
             if (message.positional.permission) {
-              if(dataset.checkOwner(message) !== undefined) return;
+              if (dataset.checkOwner(message) !== undefined) return
               const oldGlobal = dataset.globalPermission
               dataset.globalPermission = message.positional.permission
               return message.channel.send(
@@ -553,7 +579,12 @@ const command: app.Command = {
         },
         {
           name: "specific",
-          botPermissions: ["SEND_MESSAGES", "ADD_REACTIONS", "MANAGE_MESSAGES", "EMBED_LINKS"],
+          botPermissions: [
+            "SEND_MESSAGES",
+            "ADD_REACTIONS",
+            "MANAGE_MESSAGES",
+            "EMBED_LINKS",
+          ],
           positional: [
             {
               name: "dataset",
@@ -565,7 +596,8 @@ const command: app.Command = {
             },
           ],
           async run(message) {
-            const specifics: app.eddy.DatasetPermission[] = message.positional.dataset.specificPermissions
+            const specifics: app.eddy.DatasetPermission[] =
+              message.positional.dataset.specificPermissions
             if (specifics.length === 0) {
               return message.channel.send(
                 app.messageEmbed(
@@ -575,18 +607,16 @@ const command: app.Command = {
                 )
               )
             }
-            const sorted =
-              specifics
-                .sort((a, b) => {
-                  return a.targetKind === app.eddy.TargetKinds.GUILD &&
-                    b.targetKind === app.eddy.TargetKinds.USER
-                    ? 1
-                    : -1
-                })
-                const formatted = []
-            for(const p of sorted) {
+            const sorted = specifics.sort((a, b) => {
+              return a.targetKind === app.eddy.TargetKinds.GUILD &&
+                b.targetKind === app.eddy.TargetKinds.USER
+                ? 1
+                : -1
+            })
+            const formatted = []
+            for (const p of sorted) {
               if (p.targetKind === app.eddy.TargetKinds.GUILD) {
-                formatted.push( {
+                formatted.push({
                   target: message.client.guilds.cache.get(p.target)?.name,
                   permissions: `Use : ${app.checkMark(
                     p.permission !== app.eddy.Permissions.NONE
@@ -595,14 +625,14 @@ const command: app.Command = {
                   )}`,
                 })
               } else {
-                formatted.push( {
+                formatted.push({
                   target: (await message.client.users.fetch(p.target)).tag,
                   permissions: `Use : ${app.checkMark(
                     p.permission !== app.eddy.Permissions.NONE
                   )} \n Write : ${app.checkMark(
                     p.permission === app.eddy.Permissions.WRITE
                   )}`,
-                } )
+                })
               }
             }
             new app.Paginator(
@@ -659,20 +689,20 @@ const command: app.Command = {
                     ["write", "use", "none"].includes(v.toLowerCase()),
                   checkValueError:
                     "Permission must be a number and must be none, use or write",
-                  castValue: v => v.toUpperCase(),
+                  castValue: (v) => v.toUpperCase(),
                   required: true,
                 },
               ],
               async run(message) {
                 const dataset: app.eddy.Dataset = message.positional.dataset
                 const target: app.Guild | app.User = message.positional.target
-                if(dataset.checkOwner(message) !== undefined) return;
+                if (dataset.checkOwner(message) !== undefined) return
                 const permission: app.eddy.Permissions =
                   message.positional.permission
                 const old = dataset.specificPermissions.find(
                   (sp) => sp.target === target.id
                 )
-                if(old) dataset.deleteSpecificPermission(old.target)
+                if (old) dataset.deleteSpecificPermission(old.target)
                 dataset.setSpecificPermission(
                   target.id,
                   target instanceof app.Guild
@@ -700,7 +730,7 @@ const command: app.Command = {
                         ? `Use : ${app.checkMark(
                             old.permission !== app.eddy.Permissions.NONE
                           )} \n Write : ${app.checkMark(
-                        old.permission === app.eddy.Permissions.WRITE
+                            old.permission === app.eddy.Permissions.WRITE
                           )}`
                         : `No specific permissions were found`,
                       true
@@ -754,7 +784,7 @@ const command: app.Command = {
               async run(message) {
                 const dataset: app.eddy.Dataset = message.positional.dataset
                 const target: app.Guild | app.User = message.positional.target
-                if(dataset.checkOwner(message) !== undefined) return;
+                if (dataset.checkOwner(message) !== undefined) return
                 dataset.deleteSpecificPermission(target.id)
 
                 return message.channel.send(
@@ -775,6 +805,7 @@ const command: app.Command = {
     {
       name: "fetch",
       aliases: ["f"],
+      botOwner: true,
       botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
       positional: [
         {
@@ -784,34 +815,45 @@ const command: app.Command = {
           checkValueError: "There is not any dataset with that name : {}",
           castValue: (datasetName) => new app.eddy.Dataset(datasetName),
           default: "",
-        }
+        },
       ],
       async run(message) {
-
-          if (message.positional.dataset.checkOwner(message) !== undefined) return;
-
-          if (app.eddy.FetchQueue.exists(message.positional.dataset.name)) {
-              return message.channel.send(
-                new app.MessageEmbed()
-                  .setAuthor(message.author.tag, message.author.displayAvatarURL({ dynamic: true }))
-                  .addField('Position in the queue', app.eddy.FetchQueue.index(message.positional.dataset.name), true)
-                  .addField('Fetch status', message.positional.dataset.getFetchStatus() ? message.positional.dataset.getFetchStatus() + "%" : "Waiting", true)
-                  .setFooter(app.footer)
-                  .setColor('BLUE')
-                  .setTimestamp()
+        if (message.positional.dataset.checkOwner(message) !== undefined) return
+        if (app.eddy.FetchQueue.exists(message.positional.dataset.name)) {
+          return message.channel.send(
+            new app.MessageEmbed()
+              .setAuthor(
+                message.author.tag,
+                message.author.displayAvatarURL({ dynamic: true })
               )
+              .addField(
+                "Position in the queue",
+                app.eddy.FetchQueue.index(message.positional.dataset.name),
+                true
+              )
+              .addField(
+                "Fetch status",
+                message.positional.dataset.getFetchStatus()
+                  ? message.positional.dataset.getFetchStatus() + "%"
+                  : "Waiting",
+                true
+              )
+              .setFooter(app.footer)
+              .setColor("BLUE")
+              .setTimestamp()
+          )
         } else {
-            app.eddy.FetchQueue.add(message.positional.dataset.name)
-            return message.channel.send(
-              app.messageEmbed(
-                `Dataset ${message.positional.dataset.name} has been added to the fetch queue !`,
-                message.author,
-                "GREEN"
-              )
+          app.eddy.FetchQueue.add(message.positional.dataset.name)
+          return message.channel.send(
+            app.messageEmbed(
+              `Dataset ${message.positional.dataset.name} has been added to the fetch queue !`,
+              message.author,
+              "GREEN"
             )
-          }
-      }
-    }
+          )
+        }
+      },
+    },
   ],
 }
 
