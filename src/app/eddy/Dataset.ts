@@ -104,7 +104,7 @@ export class Dataset {
     name: string,
     ownerID: Discord.Snowflake,
     ownerKind: TargetKinds,
-    ngrams = 3
+    ngrams = 4
   ): Promise<DatasetInterface> {
     if (Dataset.exists(name))
       throw new DatasetExistsError(`Dataset with name "${name}" already exists`)

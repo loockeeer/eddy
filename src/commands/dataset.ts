@@ -387,7 +387,7 @@ const command: app.Command = {
           checkValue: (v) => Number(v) > 0 && Number(v) < 10,
           checkValueError: "Ngrams must be a number and between 0 and 10",
           required: false,
-          default: "3",
+          default: "4",
         },
       ],
       async run(message) {
