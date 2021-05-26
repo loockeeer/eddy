@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/loockeeer/eddy#readme",
   "dependencies": {
+    "@types/pg": "^8.6.0",
     "boxen": "^4.2.0",
     "chalk": "^4.1.0",
     "dayjs": "^1.10.4",
@@ -35,6 +36,7 @@
     "figlet": "^1.5.0",
     "file-concept-network": "^0.1.2",
     "markov-strings": "^3.0.1",
+    "pg": "^8.6.0",
     "prettier": "^2.1.2",
     "readable-size": "^0.2.0",
     "regex-parser": "^2.2.11",

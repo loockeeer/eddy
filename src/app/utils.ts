@@ -5,6 +5,7 @@ import path from "path"
 import fs from "fs/promises"
 // @ts-ignore
 import Ector from "ector"
+import { userVerification } from "./database"
 
 export const footer = `Eddy Malou - Made by Loockeeer#8522`
 export const supportGuildID = "725356760793088132"
@@ -226,4 +227,78 @@ export async function getDirectorySize(dirPath: string) {
   return Promise.all(
     files.map((f) => fs.stat(path.join(dirPath, f)))
   ).then((sizes) => sizes.reduce((acc, size) => size.size + acc, 0))
+}
+
+
+const numberExtensions: any = {
+  '24': 'Y',
+  '21': 'Z',
+  '18': 'E',
+  '15': 'P',
+  '12': 'T',
+  '9': 'G',
+  '6': 'M',
+  '3': 'k',
+  '0': ''
+};
+
+function exponent(n: number): number {
+  return n === 0 ? 0 : Math.floor(Math.log10(Math.abs(n)))
+}
+
+export function humanReadableNumber(n: number): string {
+  const exp = Math.max(Math.min(24, 3 * Math.floor(exponent(n) / 3)), 0)
+  return n/Math.pow(10, exp)+numberExtensions[exp.toString()];
+}
+
+
+export async function sendChart(message: Discord.Message, user: Discord.User): Promise<boolean> {
+  const dm = await user.createDM()
+  const chart = new Discord.MessageEmbed()
+    .setAuthor("Validation of the privacy policy and code of conduct", user.client?.user?.displayAvatarURL())
+    .setDescription("In order to use Eddy, you must accept this charter. In order to avoid any problems with the law, and to provide you with the most transparent experience possible, we ask you to accept/reject the terms of this policy. Nevertheless, even if you don't validate the charter, eddy will remain functional (without the learning features)")
+    .addField("Code of Conduct", "Here are the main rules of Eddy:\n" +
+      "- Harassment is forbidden (of course): Eddy can be a devastating tool to stalk people, especially because of his strong tendency to repeat everything he hears...\n" +
+      "\n" +
+      "- Please avoid abusive or explicit language in inappropriate datasets: be respectful, if someone has gone to a lot of trouble to keep Eddy nice, don't try to smear him.")
+
+    .addField("Privacy Policy", "Please consider reading our privacy policy")
+    .addField("Data storage", "You agree that the data you exchange with eddy (dataset names, messages exchanged), will be stored in our database. Moreover, we inform you that these data, not sensitive, are not encrypted.", true)
+    .addField("Exploitation of user data (by users)", "It is possible that a dataset owner uses the data corresponding to his dataset, which may include yours, to improve his eddy. However, no user can have access to your data via our interface.", true)
+    .addField("Exploitation of user data (by us)", "It is also possible that we, the maintainers of Eddy, may use your data to perform optimization tests, or future updates of Eddy. Also, in case you have violated the code of conduct, we may resort to inspection of your data.", true)
+    .setFooter("You have exactly 30 minutes to accept or reject the chart from now. If ")
+  const msg = await message.channel.send(chart)
+
+  userVerification.set(user.id, {
+    chartSent: true,
+    accepted: false
+  })
+
+  await msg.react("<:btn_check:847112947565985832>")
+  await msg.react("<:btn_deny:847112943702245408>")
+
+  return msg.awaitReactions((r, u)=>r.emoji.id === "847112947565985832" || r.emoji.id === "847112943702245408" && u.id === user.id, { time: 1000*60*30, max: 1 })
+    .then(collected => {
+      const firstReaction = collected.first()
+      if(firstReaction) {
+        if(firstReaction.emoji.id === "847112947565985832") {
+          userVerification.set(user.id, {
+            chartSent: true,
+            accepted: true
+          })
+          message.channel.send("You successfully validated the chart !")
+          return true
+        } else {
+          message.channel.send("You successfully rejected the chart !")
+          return false
+        }
+      } else {
+        message.channel.send("Chart validation expired. You can still validate/reject with the `/chart <y/n>` command")
+        return false
+      }
+    }).catch(err=>{
+      message.channel.send("Chart validation expired. You can still validate/reject with the `/chart <y/n>` command")
+      return false
+    })
+
 }

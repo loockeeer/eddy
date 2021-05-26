@@ -1,9 +1,10 @@
 import { Dataset, Permissions, TargetKinds } from "../Dataset"
 import Discord from "discord.js"
 import { calculatePermissions } from "./calculatePermissions"
-import { datasetsPath } from "../../utils"
+import { datasetsPath, sendChart } from "../../utils"
 import util from "util"
 import path from "path"
+import {messages, userVerification} from "../../database";
 
 async function generateText(
   dataset: Dataset,
@@ -27,18 +28,29 @@ async function generateText(
   }
 }
 
-export function generate(
+export async function generate(
   dataset: Dataset,
   content: string,
   executor: Discord.Message
 ) {
   const permission = calculatePermissions(dataset, executor)
+
+  const verification = userVerification.ensure(executor.author.id, { chartSent: false, accepted: false })
+  let verified = verification.accepted;
+  if (!verification.accepted && !verification.chartSent) {
+    verified = await sendChart(executor, executor.author);
+  }
+
   if (permission === Permissions.NONE) throw new Error("Unauthorized")
 
-  return generateText(
+  const generated = generateText(
     dataset,
     content,
     executor,
-    permission === Permissions.WRITE
+    permission === Permissions.WRITE && verified
   )
+
+  if(verified) messages.query('INSERT INTO message (author_id, request, response) VALUES ($1, $2, $3)', [executor.author.id, executor.content, generated]).catch(err => {
+  })
+  return generated
 }

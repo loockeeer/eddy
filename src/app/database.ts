@@ -3,6 +3,9 @@ import Enmap from "enmap"
 import { DatasetInterface } from "./eddy/Dataset"
 import path from "path"
 import { enmapPath } from "./utils"
+import pg from 'pg'
+
+export const messages = new pg.Client()
 
 //# Exemple with Enmap:
 
@@ -26,6 +29,16 @@ export const autoTalk = new Enmap<Discord.Snowflake, AutoTalk>({
   dataDir: path.join(enmapPath, "autoTalk"),
 })
 
+export const userVerification = new Enmap<Discord.Snowflake, UserVerif>({
+  name: "userVerif",
+  dataDir: path.join(enmapPath, "userVerif"),
+})
+
+export interface UserVerif {
+  chartSent: boolean
+  accepted: boolean
+}
+
 export const guildMentions = new Enmap<
   Discord.Snowflake,
   Discord.MessageMentionTypes[]
@@ -33,16 +46,6 @@ export const guildMentions = new Enmap<
   name: "guildMentions",
   dataDir: path.join(enmapPath, "guildMentions"),
 })
-
-export const fetchQueue = new Enmap<string, FetchEntry>({
-  name: "fetchQueue",
-  dataDir: path.join(enmapPath, "fetchQueue"),
-})
-
-export interface FetchEntry {
-  time: number
-  status: number
-}
 
 export interface AutoTalk {
   datasetName: string
