@@ -8,13 +8,17 @@ import Ector from "ector"
 import { userVerification } from "./database"
 
 export const footer = `Eddy Malou - Made by Loockeeer#8522`
-export const supportGuildID = "725356760793088132"
 export const maxDataset = 2
 export const datasetsPath = path.join(__dirname, "../../data/datasets")
 export const enmapPath = path.join(__dirname, "../../data/enmap")
 export const eddyCache = new Discord.Collection<string, Ector>()
 export const ignoreChar = "\\"
 export const eddyCooldown = 1000
+export const supportGuildInfo = {
+  botRoleID: "846700474111492106",
+  memberRoleID: "725358773677457408",
+  guildID: "725356760793088132"
+}
 
 export async function prefix(guild?: Discord.Guild): Promise<string> {
   let prefix = process.env.PREFIX as string
@@ -23,7 +27,7 @@ export async function prefix(guild?: Discord.Guild): Promise<string> {
 }
 
 export async function getSupportInvite(client: Discord.Client): Promise<Discord.Invite> {
-  const guild = client.guilds.cache.get(supportGuildID)
+  const guild = client.guilds.cache.get(supportGuildInfo.guildID)
   if(!guild) throw "Support guild no longer exists :/"
   if(!guild.systemChannel) throw "Support guild system channel does not exists !"
   const invite = (await guild.fetchInvites()).find(invite=>invite.inviter?.id === client.user?.id)
