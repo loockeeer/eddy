@@ -6,7 +6,11 @@ const listener: app.Listener<"guildMemberRemove"> = {
     if(member.guild.id !== app.supportGuildInfo.guildID) return;
 
     if(!member?.user?.bot) {
-      member.guild.systemChannel?.send(`${member.user?.tag} a quitté le serveur ! En espérant vous revoir bientôt ! / ${member.user?.tag} left the server ! Hope you'll come back soon !`)
+      const embed = new app.MessageEmbed()
+        .setImage(member.user?.displayAvatarURL({dynamic:true})  || "")
+        .addField("FR", `${member.user?.tag} a quitté le serveur...`)
+        .addField("EN", `${member.user?.tag} left the server...`)
+      member.guild.systemChannel?.send(embed)
     }
   }
 }

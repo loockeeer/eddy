@@ -9,6 +9,11 @@ const listener: app.Listener<"guildMemberAdd"> = {
       await member.roles.add(app.supportGuildInfo.botRoleID)
     } else {
       await member.roles.add(app.supportGuildInfo.memberRoleID)
+      const embed = new app.MessageEmbed()
+        .setImage(member.user?.displayAvatarURL({dynamic:true})  || "")
+        .addField("FR", `${member.user?.tag} a rejoint le serveur !`)
+        .addField("EN", `${member.user?.tag} has joined the server !`)
+      member.guild.systemChannel?.send(embed)
     }
   }
 }
