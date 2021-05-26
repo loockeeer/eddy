@@ -217,6 +217,17 @@ const command: app.Command = {
                 "GREEN"
               )
             )
+          } else if (
+            app.eddy.calculatePermissions(dataset, message) ===
+            app.eddy.Permissions.NONE
+          ) {
+            return message.channel.send(
+              app.messageEmbed(
+                `You do not have \`USE\` permission on that dataset`,
+                message.author,
+                "RED"
+              )
+            )
           } else {
             app.eddy.setAutoTalk(
               message.guild,
@@ -247,7 +258,7 @@ const command: app.Command = {
           app.eddy.link(dataset, message.positional.channel)
           return message.channel.send(
             app.messageEmbed(
-              `Successfully linked ${message.positional.channel} with ${dataset.name}`,
+              `Successfully linked ${message.positional.channel} with ${dataset.name}.`,
               message.author,
               "GREEN"
             )
@@ -801,58 +812,6 @@ const command: app.Command = {
           ],
         },
       ],
-    },
-    {
-      name: "fetch",
-      aliases: ["f"],
-      botOwner: true,
-      botPermissions: ["SEND_MESSAGES", "EMBED_LINKS"],
-      positional: [
-        {
-          name: "dataset",
-          description: "The dataset you want to choose",
-          checkValue: (datasetName) => app.eddy.Dataset.exists(datasetName),
-          checkValueError: "There is not any dataset with that name : {}",
-          castValue: (datasetName) => new app.eddy.Dataset(datasetName),
-          default: "",
-        },
-      ],
-      async run(message) {
-        if (message.positional.dataset.checkOwner(message) !== undefined) return
-        if (app.eddy.FetchQueue.exists(message.positional.dataset.name)) {
-          return message.channel.send(
-            new app.MessageEmbed()
-              .setAuthor(
-                message.author.tag,
-                message.author.displayAvatarURL({ dynamic: true })
-              )
-              .addField(
-                "Position in the queue",
-                app.eddy.FetchQueue.index(message.positional.dataset.name),
-                true
-              )
-              .addField(
-                "Fetch status",
-                message.positional.dataset.getFetchStatus()
-                  ? message.positional.dataset.getFetchStatus() + "%"
-                  : "Waiting",
-                true
-              )
-              .setFooter(app.footer)
-              .setColor("BLUE")
-              .setTimestamp()
-          )
-        } else {
-          app.eddy.FetchQueue.add(message.positional.dataset.name)
-          return message.channel.send(
-            app.messageEmbed(
-              `Dataset ${message.positional.dataset.name} has been added to the fetch queue !`,
-              message.author,
-              "GREEN"
-            )
-          )
-        }
-      },
     },
   ],
 }
