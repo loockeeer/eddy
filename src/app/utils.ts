@@ -271,7 +271,7 @@ export async function sendChart(message: Discord.Message, user: Discord.User): P
     .addField("Exploitation of user data (by users)", "It is possible that a dataset owner uses the data corresponding to his dataset, which may include yours, to improve his eddy. However, no user can have access to your data via our interface.", true)
     .addField("Exploitation of user data (by us)", "It is also possible that we, the maintainers of Eddy, may use your data to perform optimization tests, or future updates of Eddy. Also, in case you have violated the code of conduct, we may resort to inspection of your data.", true)
     .setFooter("You have exactly 30 minutes to accept or reject the chart from now. If ")
-  const msg = await message.channel.send(chart)
+  const msg = await dm.send(chart).catch(async err=>await message.channel.send(chart))
 
   userVerification.set(user.id, {
     chartSent: true,
