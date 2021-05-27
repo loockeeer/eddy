@@ -48,7 +48,7 @@ const listener: app.Listener<"message"> = {
         const autoTalk = app.eddy.getAutoTalk(message.guild)
         if (autoTalk) {
           if (!app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) {
-            return await message.reply("Bot under maintenance.")
+            return await message.reply("Bot under maintenance. Support command is always working if you need some info.")
           }
           if (checkCooldown(message)) return
           const dataset = new app.eddy.Dataset(autoTalk.datasetName)
@@ -63,7 +63,7 @@ const listener: app.Listener<"message"> = {
       const link = app.eddy.getLink(message.channel)
       if (link) {
         if (!app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) {
-          return await message.reply("Bot under maintenance.")
+          return await message.reply("Bot under maintenance. Support command is always working if you need some info.")
         }
         if (checkCooldown(message)) return
         const dataset = new app.eddy.Dataset(link)
@@ -78,7 +78,7 @@ const listener: app.Listener<"message"> = {
       const autoTalk = app.eddy.getAutoTalk(message.guild)
       if (autoTalk) {
         if (!app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) {
-          return await message.reply("Bot under maintenance.")
+          return await message.reply("Bot under maintenance. Support command is always working if you need some info.")
         }
         if (Math.random() < autoTalk.probability) {
           if (checkCooldown(message)) return

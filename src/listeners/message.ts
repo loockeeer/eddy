@@ -21,8 +21,9 @@ const listener: app.Listener<"message"> = {
     let cmd: app.Command = app.commands.resolve(key) as app.Command
 
     if (!cmd) return null
-    if (key !== "turn" && !app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) return await message.reply('Bot under maintenance.')
-
+    if (cmd.name !== "support") {
+      if (key !== "turn" && !app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) return await message.reply('Bot under maintenance. Support command is always working if you need some info.')
+    }
     // check sub commands
     {
       let cursor = 0
