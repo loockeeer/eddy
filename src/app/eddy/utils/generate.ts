@@ -43,14 +43,16 @@ export async function generate(
 
   if (permission === Permissions.NONE) throw new Error("Unauthorized")
 
-  const generated = generateText(
+  const generated = await generateText(
     dataset,
     content,
     executor,
     permission === Permissions.WRITE && verified
   )
-
-  if(verified) messages.query('INSERT INTO message (author_id, request, response) VALUES ($1, $2, $3)', [executor.author.id, executor.content, generated]).catch(err => {
-  })
+  if(verified) {
+    await messages.query('INSERT INTO message (created_at, dataset_name, channel_id, guild_id, author_id, request, response) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [Date.now(), dataset.name, executor.channel.id, executor.guild?.id ?? "0", executor.author.id, executor.content, generated]).catch(err => {
+      console.error(err)
+    })
+  }
   return generated
 }

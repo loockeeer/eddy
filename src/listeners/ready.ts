@@ -9,6 +9,7 @@ const listener: app.Listener<"ready"> = {
   event: "ready",
   once: true,
   async run() {
+    await app.database.messages.connect()
     app.log("Ok i'm ready!", "system")
 
     figlet(

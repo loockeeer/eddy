@@ -1,7 +1,7 @@
 import Discord from "discord.js"
 import fs from "fs/promises"
 import path from "path"
-import { datasets } from "../database"
+import { datasets, messages } from "../database"
 import { datasetsPath, messageEmbed, eddyCache } from "../utils"
 import { CommandMessage } from "../handler"
 import util from "util"
@@ -317,8 +317,9 @@ export class Dataset {
     return Dataset.deleteSpecificPermission(this.name, targetID)
   }
 
-  delete() {
+  async delete() {
     unlinkDatasetAll(this)
+    await messages.query('DELETE FROM message WHERE dataset_name=$1', [this._name])
     return Dataset.deleteDataset(this._name)
   }
 

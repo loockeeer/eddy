@@ -4,8 +4,16 @@ import { DatasetInterface } from "./eddy/Dataset"
 import path from "path"
 import { enmapPath } from "./utils"
 import pg from 'pg'
-
-export const messages = new pg.Client()
+import dotenv from "dotenv"
+dotenv.config()
+export const messages = new pg.Client({
+  username: process.env.PGUSER,
+  password: process.env.PGPASSWORD,
+  host: process.env.PGHOST,
+  // @ts-ignore
+  port: process.env.PGPORT,
+  database: process.env.PGDATABASE
+})
 
 //# Exemple with Enmap:
 
