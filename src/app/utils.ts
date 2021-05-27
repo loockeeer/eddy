@@ -235,12 +235,7 @@ export async function getDirectorySize(dirPath: string) {
 
 
 const numberExtensions: any = {
-  '24': 'Y',
-  '21': 'Z',
-  '18': 'E',
-  '15': 'P',
-  '12': 'T',
-  '9': 'G',
+  '9': 'B',
   '6': 'M',
   '3': 'k',
   '0': ''
@@ -251,7 +246,7 @@ function exponent(n: number): number {
 }
 
 export function humanReadableNumber(n: number): string {
-  const exp = Math.max(Math.min(24, 3 * Math.floor(exponent(n) / 3)), 0)
+  const exp = Math.max(Math.min(9, 3 * Math.floor(exponent(n) / 3)), 0)
   return n/Math.pow(10, exp)+numberExtensions[exp.toString()];
 }
 
