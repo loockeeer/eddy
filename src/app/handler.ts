@@ -5,7 +5,7 @@ import chalk from "chalk"
 import yargsParser from "yargs-parser"
 import regexParser from "regex-parser"
 
-import * as app from "../app"
+import * as core from './core'
 import {log} from './logger';
 
 export type CommandMessage = Discord.Message & {
@@ -129,7 +129,7 @@ export async function checkValue<Message extends CommandMessage>(
       : !subject.checkValue.test(value)
   ) {
     await message.channel.send(
-      new app.MessageEmbed()
+      new Discord.MessageEmbed()
         .setColor("RED")
         .setAuthor(
           `Bad ${subjectType} ${
@@ -141,8 +141,8 @@ export async function checkValue<Message extends CommandMessage>(
           subject.checkValueError
             ? subject.checkValueError.replace(/{}/g, value)
             : typeof subject.checkValue === "function"
-            ? app.CODE.stringify({
-                content: app.CODE.format(subject.checkValue.toString()),
+            ? core.CODE.stringify({
+                content: core.CODE.format(subject.checkValue.toString()),
                 lang: "js",
               })
             : `Expected pattern: \`${subject.checkValue.source}\``
@@ -205,7 +205,7 @@ export async function castValue<Message extends CommandMessage>(
     }
   } catch (error) {
     await message.channel.send(
-      new app.MessageEmbed()
+      new Discord.MessageEmbed()
         .setColor("RED")
         .setAuthor(
           `Bad ${subjectType} type "${subject.name}".`,
@@ -216,7 +216,7 @@ export async function castValue<Message extends CommandMessage>(
             typeof subject.castValue === "function"
               ? "{*custom type*}"
               : "`" + subject.castValue + "`"
-          }\n${app.CODE.stringify({
+          }\n${core.CODE.stringify({
             content: `Error: ${error.message}`,
             lang: "js",
           })}`
@@ -278,7 +278,7 @@ export async function sendCommandDetails<Message extends CommandMessage>(
     for (const positional of cmd.positional) {
       const dft =
         positional.default !== undefined
-          ? `="${await app.scrap(positional.default, message)}"`
+          ? `="${await core.scrap(positional.default, message)}"`
           : ""
       positionalList.push(
         positional.required && !dft
@@ -295,7 +295,7 @@ export async function sendCommandDetails<Message extends CommandMessage>(
       } else {
         const dft =
           arg.default !== undefined
-            ? `="${app.scrap(arg.default, message)}"`
+            ? `="${core.scrap(arg.default, message)}"`
             : ""
         argumentList.push(
           arg.required
@@ -311,7 +311,7 @@ export async function sendCommandDetails<Message extends CommandMessage>(
   if (cmd.botOwner) specialPermissions.push("BOT_OWNER")
   if (cmd.guildOwner) specialPermissions.push("GUILD_OWNER")
 
-  const embed = new app.MessageEmbed()
+  const embed = new Discord.MessageEmbed()
     .setColor("BLURPLE")
     .setAuthor("Command details", message.client.user?.displayAvatarURL())
     .setTitle(`${pattern} ${[...positionalList, ...flagList].join(" ")}`)
@@ -327,14 +327,14 @@ export async function sendCommandDetails<Message extends CommandMessage>(
   if (argumentList.length > 0)
     embed.addField(
       "options",
-      app.CODE.stringify({ content: argumentList.join(" "), lang: "shell" }),
+      core.CODE.stringify({ content: argumentList.join(" "), lang: "shell" }),
       false
     )
 
   if (cmd.examples)
     embed.addField(
       "examples:",
-      app.CODE.stringify({
+      core.CODE.stringify({
         content: cmd.examples.map((example) => prefix + example).join("\n"),
       }),
       false

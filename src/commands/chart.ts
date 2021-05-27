@@ -3,7 +3,7 @@ import { sendChart } from "../app"
 
 const command: app.Command = {
   name: "chart",
-  args: [
+  positional: [
     {
       name: "choice",
       checkValue: /send|accept|decline/,
