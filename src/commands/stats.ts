@@ -22,13 +22,13 @@ const command: app.Command = {
         true
       )
       .addField("Websocket Ping", `${message.client.ws.ping} ms`, true)
-      .addField("Dataset Count", app.datasets.count, true)
+      .addField("Dataset Count", app.humanReadableNumber(app.datasets.count), true)
       .addField(
         "Datasets Size",
         readableSize(await app.getDirectorySize(app.datasetsPath)),
         true
       )
-      .addField("Guild Count", message.client.guilds.cache.size, true)
+      .addField("Guild Count", app.humanReadableNumber(message.client.guilds.cache.size), true)
       .addField("RAM Usage", readableSize(process.memoryUsage().heapUsed), true)
       .setFooter(app.footer)
       .setColor("BLUE")

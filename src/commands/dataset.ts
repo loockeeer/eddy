@@ -323,7 +323,7 @@ const command: app.Command = {
 
         for (const dataset of totalDatasets) {
           formatted.push(
-            `Links: ${dataset.u} - ${dataset.dataset.name} | ${
+            `Links: ${app.humanReadableNumber(dataset.u)} - ${dataset.dataset.name} | ${
               dataset.dataset.data.ownerKind === app.eddy.TargetKinds.USER
                 ? (
                     await message.client.users
