@@ -99,7 +99,6 @@ export async function channelCastValue(value: string, message: CommandMessage) {
       : message.channel
   } else if (value.match(/\d+/)) {
     const ID = value.match(/\d+/)?.[0]
-    console.log(ID)
     if (!ID) return false
     return message.guild
       ? message.guild.channels.cache.get(ID)

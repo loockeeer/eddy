@@ -6,6 +6,7 @@ import yargsParser from "yargs-parser"
 import regexParser from "regex-parser"
 
 import * as app from "../app"
+import {log} from './logger';
 
 export type CommandMessage = Discord.Message & {
   args: PartialBy<yargsParser.Arguments, "_">
@@ -251,8 +252,9 @@ export function validateArguments<Message extends CommandMessage>(
           }" command must be equal to 1`
         )
 
-  app.log(
-    `loaded command ${chalk.blue((path ? path + " " : "") + command.name)}`,
+  log(
+    `
+    command ${chalk.blue((path ? path + " " : "") + command.name)}`,
     "handler"
   )
 
