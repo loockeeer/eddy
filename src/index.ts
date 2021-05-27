@@ -9,7 +9,7 @@ import * as app from "./app"
 dotenv.config()
 
 
-for (const key of ["TOKEN", "PREFIX", "OWNER", "NODE_ENV"]) {
+for (const key of ["TOKEN", "PREFIX", "OWNER"]) {
   if (!process.env[key] || /[{}\s]/.test(process.env[key] as string)) {
     throw new Error("You need to add " + key + " value in your .env file.")
   }
@@ -22,13 +22,13 @@ const client = new Discord.Client({
 client.login(process.env.TOKEN).catch(() => {
   throw new Error("Invalid Discord token given.")
 })
-if(process.env.NODE_ENV !== "development") {
-  http.createServer((req, res) => {
-    res.statusCode = 200
-    res.write(app.cache.ensure<boolean>("turn", true) ? "Up" : "Maintenance")
-    res.end()
-  }).listen(process.env.PING_PORT, process.env.PING_HOST as any)
-}
+
+http.createServer((req, res) => {
+  res.statusCode = 200
+  res.write(app.cache.ensure<boolean>("turn", true) ? "Up" : "Maintenance")
+  res.end()
+}).listen(process.env.PING_PORT, process.env.PING_HOST as any)
+
 
 fs.readdir(app.commandsPath)
   .then((files) =>
