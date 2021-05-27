@@ -5,9 +5,9 @@
   "description": "Discord dumb chatbot written in JavaScript",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "start": "tsc && node prestart.js && node .",
-    "watch": "tsc-watch --onSuccess \"node .\"",
+    "build": "gulp build",
+    "start": "gulp build && node .",
+    "watch": "gulp watch",
     "format": "prettier --write src"
   },
   "prettier": {
@@ -35,6 +35,7 @@
     "enmap": "^5.8.2",
     "figlet": "^1.5.0",
     "file-concept-network": "^0.1.2",
+    "gulp": "^4.0.2",
     "markov-strings": "^3.0.1",
     "pg": "^8.6.0",
     "prettier": "^2.1.2",
@@ -51,8 +52,11 @@
     "@types/prettier": "^2.2.1",
     "@types/ws": "^7.2.9",
     "@types/yargs-parser": "^20.2.0",
+    "del": "^6.0.0",
+    "gulp-esbuild": "^0.8.0",
     "make-bot.ts": "^1.2.9",
     "node-gyp": "^7.1.2",
+    "nodemon": "^2.0.7",
     "tsc-watch": "^4.2.9",
     "typescript": "^4.0.5"
   }
