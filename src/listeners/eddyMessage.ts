@@ -8,6 +8,12 @@ const listener: app.Listener<"message"> = {
   event: "message",
   async run(message) {
     if (!app.isCommandMessage(message)) return
+
+    if (!app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) {
+      return await message.reply("Bot under maintenance.")
+    }
+
+
     if (message.author.bot) return
     if (message.content.startsWith(app.ignoreChar)) return
 

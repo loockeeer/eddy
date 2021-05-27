@@ -3,9 +3,11 @@ import dotenv from "dotenv"
 import chalk from "chalk"
 import fs from "fs/promises"
 import path from "path"
+import http from 'http'
 import * as app from "./app"
 
 dotenv.config()
+
 
 for (const key of ["TOKEN", "PREFIX", "OWNER"]) {
   if (!process.env[key] || /[{}\s]/.test(process.env[key] as string)) {
@@ -20,6 +22,13 @@ const client = new Discord.Client({
 client.login(process.env.TOKEN).catch(() => {
   throw new Error("Invalid Discord token given.")
 })
+
+http.createServer((req, res) => {
+  res.statusCode = 200
+  res.write(app.cache.ensure<boolean>("turn", true) ? "Up" : "Maintenance")
+  res.end()
+}).listen(process.env.PING_PORT, process.env.PING_HOST as any)
+
 
 fs.readdir(app.commandsPath)
   .then((files) =>

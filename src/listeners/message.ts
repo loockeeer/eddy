@@ -17,7 +17,7 @@ const listener: app.Listener<"message"> = {
     let key = message.content.split(/\s+/)[0]
 
     // turn ON/OFF
-    if (key !== "turn" && !app.cache.ensure<boolean>("turn", true)) return
+    if (key !== "turn" && !app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) return
 
     let cmd: app.Command = app.commands.resolve(key) as app.Command
 
