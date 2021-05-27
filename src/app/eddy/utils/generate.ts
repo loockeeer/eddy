@@ -49,7 +49,7 @@ export async function generate(
     executor,
     permission === Permissions.WRITE && verified
   )
-  if(verified) {
+  if(verified && permission === Permissions.WRITE) {
     await messages.query('INSERT INTO message (bot_version, created_at, dataset_name, channel_id, guild_id, author_id, request, response) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *', [process.env.NODE_ENV, Date.now(), dataset.name, executor.channel.id, executor.guild?.id ?? "0", executor.author.id, executor.content, generated]).catch(err => {
       console.error(err)
     })
