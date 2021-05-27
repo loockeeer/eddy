@@ -17,7 +17,7 @@ const listener: app.Listener<"message"> = {
     let key = message.content.split(/\s+/)[0]
 
     // turn ON/OFF
-    if (key !== "turn" && !app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) return
+    if (key !== "turn" && !app.cache.ensure<boolean>("turn", true) && message.author.id !== process.env.OWNER) return await message.reply('Bot under maintenance.')
 
     let cmd: app.Command = app.commands.resolve(key) as app.Command
 
